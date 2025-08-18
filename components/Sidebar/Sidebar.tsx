@@ -3,10 +3,34 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { FaBox, FaHome, FaUsers } from "react-icons/fa";
+import { FaBox, FaHome, FaUsers, FaSignOutAlt } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 export default function Sidebar() {
     const [isExpanded, setIsExpanded] = useState(false);
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        try {
+            // Chama a rota de logout no backend
+            const response = await fetch('http://localhost:3000/auth/logout', {
+                method: 'POST',
+                credentials: 'include', // Necessário para enviar cookies
+            });
+
+            if (response.ok) {
+                // Limpa o token do localStorage
+                localStorage.removeItem('token');
+
+                // Redireciona para a página de login
+                router.push('/login');
+                // Força atualização do layout (importante para esconder a sidebar)
+                router.refresh();
+            }
+        } catch (error) {
+            console.error('Erro ao fazer logout:', error);
+        }
+    };
 
     return (
         <div
@@ -18,16 +42,15 @@ export default function Sidebar() {
             <Link href="/" className="flex items-center mb-6">
                 <Image
                     src="/imgs/png/order.png"
-                    alt="Sidebar Logo" 
+                    alt="Sidebar Logo"
                     width={isExpanded ? 150 : 50}
                     height={isExpanded ? 150 : 50}
                     className={`text-2xl font-bold mb-6 whitespace-nowrap overflow-hidden transition-all duration-300 
                         ${isExpanded ? "opacity-100" : "opacity-100 w-10"}`}
                 />
             </Link>
-            
-            
-            <nav className="flex flex-col gap-4">
+
+            <nav className="flex flex-col gap-4 flex-grow">
                 <Link href="/" className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition">
                     <FaHome size={20} />
                     <span
@@ -57,6 +80,26 @@ export default function Sidebar() {
                         Usuários
                     </span>
                 </Link>
+
+                {/* Botão de Logout - posicionado no final */}
+                <div className="mt-auto">
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition w-full group"
+                    >
+                        <FaSignOutAlt
+                            size={20}
+                            className="group-hover:text-red-400 transition-colors"
+                        />
+                        <span
+                            className={`whitespace-nowrap transition-all duration-300 
+                                ${isExpanded ? "opacity-100" : "opacity-0 w-0"} 
+                                group-hover:text-red-400`}
+                        >
+                            Sair
+                        </span>
+                    </button>
+                </div>
             </nav>
         </div>
     );
