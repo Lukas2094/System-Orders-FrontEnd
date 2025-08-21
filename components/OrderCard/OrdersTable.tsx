@@ -14,17 +14,16 @@ export default function OrdersTable({ orders, onStatusUpdate }: Props) {
     };
 
     function formatPhone(phone: string) {
-        // Remove tudo que não for número
         const digits = phone.replace(/\D/g, '');
 
-        // Aplica máscara
+
         if (digits.length === 11) {
             return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
         } else if (digits.length === 10) {
             return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
         }
 
-        return phone; // Retorna original se não for 10 ou 11 dígitos
+        return phone; 
     };
 
     function statusColor(status: string) {

@@ -12,19 +12,15 @@ export default function Sidebar() {
 
     const handleLogout = async () => {
         try {
-            // Chama a rota de logout no backend
             const response = await fetch('http://localhost:3000/auth/logout', {
                 method: 'POST',
-                credentials: 'include', // Necessário para enviar cookies
+                credentials: 'include', 
             });
 
             if (response.ok) {
-                // Limpa o token do localStorage
                 localStorage.removeItem('token');
 
-                // Redireciona para a página de login
                 router.push('/login');
-                // Força atualização do layout (importante para esconder a sidebar)
                 router.refresh();
             }
         } catch (error) {
@@ -43,6 +39,7 @@ export default function Sidebar() {
                 <Image
                     src="/imgs/png/order.png"
                     alt="Sidebar Logo"
+                    unoptimized
                     width={isExpanded ? 150 : 50}
                     height={isExpanded ? 150 : 50}
                     className={`text-2xl font-bold mb-6 whitespace-nowrap overflow-hidden transition-all duration-300 
@@ -85,7 +82,7 @@ export default function Sidebar() {
                 <div className="mt-auto">
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition w-full group"
+                        className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition w-full group cursor-pointer"
                     >
                         <FaSignOutAlt
                             size={20}
