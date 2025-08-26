@@ -61,7 +61,7 @@ export default function OrdersTable({ orders, onStatusUpdate }: Props) {
                                 <ul className="list-disc pl-5">
                                     {order.items.map((item, idx) => (
                                         <li key={idx}>
-                                            Produto {item.productId} x{item.quantity} - R${item.price}
+                                            Produto {item.item} x{item.qty} - R${item.price}
                                         </li>
                                     ))}
                                 </ul>

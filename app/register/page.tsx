@@ -58,7 +58,7 @@ export default function RegisterPage() {
                     required
                 />
 
-                <button type="submit" className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
+                <button type="submit" className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 cursor-pointer">
                     Criar Conta
                 </button>
 

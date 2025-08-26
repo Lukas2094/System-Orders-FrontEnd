@@ -18,9 +18,12 @@ export default async function RootLayout({
 
   return (
     <html lang="pt-BR">
-      <body className="flex">
+      <body className="flex h-screen overflow-hidden">
         {isAuthenticated && <Sidebar />}
-        <main className={`${isAuthenticated ? 'flex-1' : 'w-full'} p-6 bg-gray-100 min-h-screen`}>
+        <main
+          className={`${isAuthenticated ? 'flex-1' : 'w-full'} 
+            p-6 bg-gray-100 overflow-y-auto`}
+        >
           {children}
         </main>
       </body>
