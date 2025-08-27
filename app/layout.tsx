@@ -1,6 +1,7 @@
 import './globals.css';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import { cookies } from 'next/headers';
+import { RoleProvider } from "@/utils/RoleContext";
 
 export const metadata = {
   title: 'Dashboard',
@@ -19,6 +20,7 @@ export default async function RootLayout({
   return (
     <html lang="pt-BR">
       <body className="flex h-screen overflow-hidden">
+         <RoleProvider>
         {isAuthenticated && <Sidebar />}
         <main
           className={`${isAuthenticated ? 'flex-1' : 'w-full'} 
@@ -26,6 +28,7 @@ export default async function RootLayout({
         >
           {children}
         </main>
+        </RoleProvider>
       </body>
     </html>
   )

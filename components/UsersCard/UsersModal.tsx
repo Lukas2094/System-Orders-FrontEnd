@@ -1,5 +1,7 @@
 "use client";
 
+import { api } from "@/utils/api";
+import { maskPhone, validateEmail } from "@/utils/functions/masks";
 import { useState, useEffect } from "react";
 
 export default function UserModal({
@@ -13,36 +15,50 @@ export default function UserModal({
 }) {
     const [name, setName] = useState(user?.name || "");
     const [email, setEmail] = useState(user?.email || "");
+    const [phone, setPhone] = useState(user?.phone || "");
     const [password, setPassword] = useState("");
     const [roleId, setRoleId] = useState(user?.role?.id || "");
 
-    // Se o usuário mudar, atualizar estados
     useEffect(() => {
         setName(user?.name || "");
         setEmail(user?.email || "");
+        setPhone(user?.phone || "");
         setRoleId(user?.role?.id || "");
     }, [user]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const method = user ? "PUT" : "POST";
-        const url = user
-            ? `http://localhost:3000/users/${user.id}`
-            : `http://localhost:3000/auth/register`;
+        if (!validateEmail(email)) {
+            alert("Email inválido!");
+            return;
+        }
 
-        await fetch(url, {
-            method,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                name,
-                email,
-                password: password || undefined,
-                roleId: Number(roleId),
-            }),
-        });
+        try {
+            if (user) {
+                // Atualizar usuário
+                await api.put(`/users/${user.id}`, {
+                    name,
+                    email,
+                    password: password || undefined,
+                    phone,
+                    roleId: Number(roleId),
+                });
+            } else {
+                await api.post(`/auth/register`, {
+                    name,
+                    email,
+                    password,
+                    phone,
+                    roleId: Number(roleId),
+                });
+            }
 
-        onClose();
+            onClose();
+        } catch (err: any) {
+            console.error("Erro ao salvar usuário:", err);
+            alert(err?.response?.data?.message || "Erro ao salvar usuário.");
+        }
     };
 
     return (
@@ -68,6 +84,19 @@ export default function UserModal({
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            onBlur={() => {
+                                if (!validateEmail(email)) alert("Email inválido!");
+                            }}
+                            required
+                            className="w-full border p-2 rounded"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm">Telefone</label>
+                        <input
+                            type="text"
+                            value={phone}
+                            onChange={(e) => setPhone(maskPhone(e.target.value))}
                             required
                             className="w-full border p-2 rounded"
                         />
@@ -95,7 +124,7 @@ export default function UserModal({
                             <option value="">Selecione...</option>
                             {roles.map((role) => (
                                 <option key={role.id} value={role.id}>
-                                    {role.name}
+                                    {role.name.toUpperCase()}
                                 </option>
                             ))}
                         </select>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import UserModal from "./UsersModal";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import { api } from "@/utils/api";
 
 type UserTableProps = {
     users: any[];
@@ -32,6 +33,16 @@ export default function UsersTable({ users, roles }: UserTableProps) {
         };
     }, []);
 
+    const deleteUser = async (id: number) => {
+        try {
+            await api.delete(`/users/${id}`);
+            setUserList((prev) => prev.filter((u) => u.id !== id));
+        } catch (err) {
+            console.error("Erro ao deletar usuário:", err);
+            alert("Não foi possível deletar o usuário.");
+        }
+    };
+
     return (
         <div className="p-4">
             <button
@@ -51,6 +62,7 @@ export default function UsersTable({ users, roles }: UserTableProps) {
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefone</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                         </tr>
@@ -61,6 +73,7 @@ export default function UsersTable({ users, roles }: UserTableProps) {
                                 <td className="px-6 py-4 whitespace-nowrap">{user.id}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">{user.phone ?? "Sem Telefone"}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">{user.role?.name.toUpperCase() || "—"}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-center flex justify-center gap-2">
                                     <button
@@ -71,9 +84,7 @@ export default function UsersTable({ users, roles }: UserTableProps) {
                                         <FaEdit size={14} />
                                     </button>
                                     <button
-                                        onClick={async () => {
-                                            await fetch(`http://localhost:3000/users/${user.id}`, { method: "DELETE" });
-                                        }}
+                                        onClick={() => deleteUser(user.id)}
                                         className="bg-red-600 hover:bg-red-700 p-2 rounded text-white transition"
                                         title="Excluir"
                                     >
