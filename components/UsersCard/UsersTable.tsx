@@ -5,24 +5,34 @@ import { io } from "socket.io-client";
 import UserModal from "./UsersModal";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { api } from "@/utils/api";
+import { useRole } from "@/utils/RoleContext";
 
 type UserTableProps = {
     users: any[];
     roles: any[];
+    loggedUser?: any;
 };
 
 const socket = io("http://localhost:3000");
 
-export default function UsersTable({ users, roles }: UserTableProps) {
+export default function UsersTable({ users, roles, loggedUser }: UserTableProps) {
     const [userList, setUserList] = useState(users);
     const [selectedUser, setSelectedUser] = useState<any | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
+    const { setRole, setNameContext } = useRole();
+    
     useEffect(() => {
         socket.on("userCreated", (newUser) => setUserList((prev) => [...prev, newUser]));
-        socket.on("userUpdated", (updatedUser) =>
-            setUserList((prev) => prev.map((u) => (u.id === updatedUser.id ? updatedUser : u)))
-        );
+        socket.on("userUpdated", (updatedUser) => {
+            setUserList((prev) =>
+                prev.map((u) => (u.id === updatedUser.id ? updatedUser : u))
+            );
+    
+            if (loggedUser?.sub === updatedUser.id) {
+                setRole(updatedUser.role);
+                setNameContext(updatedUser.name);
+            }
+        });
         socket.on("userDeleted", (userId) =>
             setUserList((prev) => prev.filter((u) => u.id !== userId))
         );

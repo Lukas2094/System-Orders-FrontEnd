@@ -3,6 +3,8 @@ import Sidebar from '@/components/Sidebar/Sidebar';
 import { cookies } from 'next/headers';
 import { RoleProvider } from "@/utils/RoleContext";
 import jwt from "jsonwebtoken";
+import { useUserSocket } from '@/utils/useUserSocket';
+import UserSocketInit from '@/utils/UserSocketInit';
 
 export const metadata = {
   title: 'Dashboard',
@@ -20,11 +22,13 @@ export default async function RootLayout({
 
   let roleFromSSR = null;
   let nameFromSSR = null;
+  let userId: number | null = null;
   if (token) {
     try {
       const decoded: any = jwt.decode(token);
       roleFromSSR = decoded?.role || null;
       nameFromSSR = decoded?.name || null;
+      userId = decoded?.sub || null;
     } catch (e) {
       console.error("Erro ao decodificar token:", e);
     }
@@ -38,7 +42,8 @@ export default async function RootLayout({
         <main
           className={`${isAuthenticated ? 'flex-1' : 'w-full'} 
             p-6 bg-gray-100 overflow-y-auto`}
-        >
+          >
+            {userId && <UserSocketInit userId={userId} />}
           {children}
         </main>
         </RoleProvider>
