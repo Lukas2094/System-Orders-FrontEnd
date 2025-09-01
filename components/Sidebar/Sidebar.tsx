@@ -5,10 +5,34 @@ import Link from "next/link";
 import { useState } from "react";
 import { FaBox, FaHome, FaUsers, FaSignOutAlt } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { useRole } from "@/utils/RoleContext";
 
 export default function Sidebar() {
     const [isExpanded, setIsExpanded] = useState(false);
     const router = useRouter();
+    const { role, name } = useRole();
+    
+    function Avatar({ name, isExpanded }: { name: string | null; isExpanded: boolean }) {
+        if (!name) return null;
+
+        const initials = name
+            .split(" ")
+            .map(word => word[0].toUpperCase())
+            .slice(0, 2)
+            .join("");
+
+        return (
+            <div className="flex items-center mb-4 transition-all duration-300">
+                <div
+                    className={`flex items-center justify-center bg-blue-600 text-white rounded-full h-12 text-lg font-bold 
+                transition-all duration-300
+                ${isExpanded ? "px-4 w-auto rounded-full" : "w-12"}`}
+                >
+                    {isExpanded ? name : initials}
+                </div>
+            </div>
+        );
+    }
 
     const handleLogout = async () => {
         try {
@@ -35,6 +59,8 @@ export default function Sidebar() {
             className={`h-screen bg-gray-800 text-white flex flex-col p-4 transition-all duration-300 
                 ${isExpanded ? "w-64" : "w-20"}`}
         >
+
+            <Avatar name={name} isExpanded={isExpanded} />
             <Link href="/" className="flex items-center mb-6">
                 <Image
                     src="/imgs/png/order.png"
@@ -68,15 +94,21 @@ export default function Sidebar() {
                     </span>
                 </Link>
 
-                <Link href="/users" className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition">
-                    <FaUsers size={20} />
-                    <span
-                        className={`whitespace-nowrap transition-all duration-300 
-                            ${isExpanded ? "opacity-100" : "opacity-0 w-0"}`}
+                {(role.name === 'admin' || role.name === 'manager') && (
+                    <Link
+                        href="/users"
+                        className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition"
                     >
-                        Usuários
-                    </span>
-                </Link>
+                        <FaUsers size={20} />
+                        <span
+                            className={`whitespace-nowrap transition-all duration-300 
+                ${isExpanded ? "opacity-100" : "opacity-0 w-0"}`}
+                        >
+                            Usuários
+                        </span>
+                    </Link>
+                )}
+
 
                 {/* Botão de Logout - posicionado no final */}
                 <div className="mt-auto">

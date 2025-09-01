@@ -2,6 +2,7 @@
 
 import { api } from "@/utils/api";
 import { maskPhone, validateEmail } from "@/utils/functions/masks";
+import { useRole } from "@/utils/RoleContext";
 import { useState, useEffect } from "react";
 
 export default function UserModal({
@@ -18,6 +19,7 @@ export default function UserModal({
     const [phone, setPhone] = useState(user?.phone || "");
     const [password, setPassword] = useState("");
     const [roleId, setRoleId] = useState(user?.role?.id || "");
+    const { setRole, setNameContext } = useRole();
 
     useEffect(() => {
         setName(user?.name || "");
@@ -54,6 +56,12 @@ export default function UserModal({
                 });
             }
 
+            const selectedRole = roles.find(r => r.id === Number(roleId));
+            if (selectedRole) {
+                setRole(selectedRole);
+            }
+
+            setNameContext(name);
             onClose();
         } catch (err: any) {
             console.error("Erro ao salvar usuário:", err);

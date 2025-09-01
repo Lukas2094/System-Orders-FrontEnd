@@ -3,17 +3,24 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
 type RoleContextType = {
-  role: any; // pode ser tipado melhor, ex: { id: number, name: string }
+  role: any;
+  name: string | null;
   setRole: (role: any) => void;
+  setNameContext: (name: string) => void;
 };
 
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
-export function RoleProvider({ children }: { children: ReactNode }) {
-  const [role, setRole] = useState<any>(null);
+export function RoleProvider({ children, initialRole, initialName }: {
+  children: ReactNode;
+  initialRole?: any;
+  initialName?: string | null;
+}) {
+  const [role, setRole] = useState<any>(initialRole || null);
+  const [name, setNameContext] = useState<string | null>(initialName || null);
 
   return (
-    <RoleContext.Provider value={{ role, setRole }}>
+    <RoleContext.Provider value={{ role, setRole, name, setNameContext }}>
       {children}
     </RoleContext.Provider>
   );
