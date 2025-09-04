@@ -2,134 +2,157 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { FaBox, FaHome, FaUsers, FaSignOutAlt } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { FaSignOutAlt } from "react-icons/fa";
+import * as Icons from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useRole } from "@/utils/RoleContext";
+import io from "socket.io-client";
+import { api } from "@/utils/api";
+
+const socket = io(api.defaults.baseURL);
 
 export default function Sidebar() {
-    const [isExpanded, setIsExpanded] = useState(false);
-    const router = useRouter();
-    const { role, name } = useRole();
-    
-    function Avatar({ name, isExpanded }: { name: string | null; isExpanded: boolean }) {
-        if (!name) return null;
+  const [isExpanded, setIsExpanded] = useState(false);
+  const router = useRouter();
+  const { role, name } = useRole();
+  const [menus, setMenus] = useState<any[]>([]);
 
-        const initials = name
-            .split(" ")
-            .map(word => word[0].toUpperCase())
-            .slice(0, 2)
-            .join("");
+  useEffect(() => {
+    const fetchMenus = async () => {
+      try {
+        const response = await api.get("/menus");
 
-        return (
-            <div className="flex items-center mb-4 transition-all duration-300">
-                <div
-                    className={`flex items-center justify-center bg-blue-600 text-white rounded-full h-12 text-lg font-bold 
-                transition-all duration-300
-                ${isExpanded ? "px-4 w-auto rounded-full" : "w-12"}`}
-                >
-                    {isExpanded ? name : initials}
-                </div>
-            </div>
-        );
-    }
-
-    const handleLogout = async () => {
-        try {
-            const response = await fetch('http://localhost:3000/auth/logout', {
-                method: 'POST',
-                credentials: 'include', 
-            });
-
-            if (response.ok) {
-                localStorage.removeItem('token');
-
-                router.push('/login');
-                router.refresh();
-            }
-        } catch (error) {
-            console.error('Erro ao fazer logout:', error);
+        if (response.status !== 200) {
+          console.error("Erro ao buscar menus:", response.statusText);
+          return;
         }
+        
+        const filtered = response.data.filter((menu: any) =>
+          menu.roles.some((r: any) => r.id=== role)
+        );
+
+        setMenus(filtered);
+      } catch (error) {
+        console.error("Erro ao buscar menus:", error);
+      }
     };
 
-    return (
-        <div
-            onMouseEnter={() => setIsExpanded(true)}
-            onMouseLeave={() => setIsExpanded(false)}
-            className={`h-screen bg-gray-800 text-white flex flex-col p-4 transition-all duration-300 
-                ${isExpanded ? "w-64" : "w-20"}`}
-        >
-
-            <Avatar name={name} isExpanded={isExpanded} />
-            <Link href="/" className="flex items-center mb-6">
-                <Image
-                    src="/imgs/png/order.png"
-                    alt="Sidebar Logo"
-                    unoptimized
-                    width={isExpanded ? 150 : 50}
-                    height={isExpanded ? 150 : 50}
-                    className={`text-2xl font-bold mb-6 whitespace-nowrap overflow-hidden transition-all duration-300 
-                        ${isExpanded ? "opacity-100" : "opacity-100 w-10"}`}
-                />
-            </Link>
-
-            <nav className="flex flex-col gap-4 flex-grow">
-                <Link href="/" className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition">
-                    <FaHome size={20} />
-                    <span
-                        className={`whitespace-nowrap transition-all duration-300 
-                            ${isExpanded ? "opacity-100" : "opacity-0 w-0"}`}
-                    >
-                        Pedidos
-                    </span>
-                </Link>
-
-                <Link href="/products" className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition">
-                    <FaBox size={20} />
-                    <span
-                        className={`whitespace-nowrap transition-all duration-300 
-                            ${isExpanded ? "opacity-100" : "opacity-0 w-0"}`}
-                    >
-                        Produtos
-                    </span>
-                </Link>
-
-                {(role.name === 'admin' || role.name === 'manager') && (
-                    <Link
-                        href="/users"
-                        className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition"
-                    >
-                        <FaUsers size={20} />
-                        <span
-                            className={`whitespace-nowrap transition-all duration-300 
-                ${isExpanded ? "opacity-100" : "opacity-0 w-0"}`}
-                        >
-                            Usuários
-                        </span>
-                    </Link>
-                )}
+    if (role) fetchMenus();
+  }, [role]);
 
 
-                {/* Botão de Logout - posicionado no final */}
-                <div className="mt-auto">
-                    <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition w-full group cursor-pointer"
-                    >
-                        <FaSignOutAlt
-                            size={20}
-                            className="group-hover:text-red-400 transition-colors"
-                        />
-                        <span
-                            className={`whitespace-nowrap transition-all duration-300 
-                                ${isExpanded ? "opacity-100" : "opacity-0 w-0"} 
-                                group-hover:text-red-400`}
-                        >
-                            Sair
-                        </span>
-                    </button>
-                </div>
-            </nav>
-        </div>
+  useEffect(() => {
+    socket.on("menuCreated", (menu) => setMenus((prev: any[]) => [...prev, menu]));
+    socket.on("menuUpdated", (menu) =>
+      setMenus((prev: any[]) => prev.map((m: any) => (m.id === menu.id ? menu : m)))
     );
+    socket.on("menuDeleted", (menuId) =>
+      setMenus((prev: any[]) => prev.filter((m) => m.id !== menuId))
+    );
+
+    return () => {
+      socket.off("menuCreated");
+      socket.off("menuUpdated");
+      socket.off("menuDeleted");
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        localStorage.removeItem("token");
+        router.push("/login");
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error);
+    }
+  };
+
+  function Avatar({ name, isExpanded }: { name: string | null; isExpanded: boolean }) {
+    if (!name) return null;
+    const initials = name
+      .split(" ")
+      .map((word) => word[0].toUpperCase())
+      .slice(0, 2)
+      .join("");
+
+    return (
+      <div className="flex items-center mb-4 transition-all duration-300">
+        <div
+          className={`flex items-center justify-center bg-blue-600 text-white rounded-full h-12 text-lg font-bold 
+            transition-all duration-300 ${isExpanded ? "px-4 w-auto rounded-full" : "w-12"}`}
+        >
+          {isExpanded ? name : initials}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      onMouseEnter={() => setIsExpanded(true)}
+      onMouseLeave={() => setIsExpanded(false)}
+      className={`h-screen bg-gray-800 text-white flex flex-col p-4 transition-all duration-300 
+        ${isExpanded ? "w-64" : "w-20"}`}
+    >
+      <Avatar name={name} isExpanded={isExpanded} />
+      <Link href="/" className="flex items-center mb-6">
+        <Image
+          src="/imgs/png/order.png"
+          alt="Sidebar Logo"
+          unoptimized
+          width={isExpanded ? 150 : 50}
+          height={isExpanded ? 150 : 50}
+          className={`text-2xl font-bold mb-6 whitespace-nowrap overflow-hidden transition-all duration-300 
+            ${isExpanded ? "opacity-100" : "opacity-100 w-10"}`}
+        />
+      </Link>
+
+      {/* Menus dinâmicos */}
+      <nav className="flex flex-col gap-4 flex-grow">
+        {menus.map((menu: any) => {
+          const Icon = (Icons as any)[menu.icon as keyof typeof Icons] || Icons.FaBox;
+          return (
+            <Link
+              key={menu.id}
+              href={menu.path}
+              className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition"
+            >
+              <Icon size={20} />
+              <span
+                className={`whitespace-nowrap transition-all duration-300 
+                  ${isExpanded ? "opacity-100" : "opacity-0 w-0"}`}
+              >
+                {menu.name}
+              </span>
+            </Link>
+          );
+        })}
+
+        {/* Botão de Logout */}
+        <div className="mt-auto">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition w-full group cursor-pointer"
+          >
+            <FaSignOutAlt size={20} className="group-hover:text-red-400 transition-colors" />
+            <span
+              className={`whitespace-nowrap transition-all duration-300 
+                ${isExpanded ? "opacity-100" : "opacity-0 w-0"} 
+                group-hover:text-red-400`}
+            >
+              Sair
+            </span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  );
 }
