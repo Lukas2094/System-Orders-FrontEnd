@@ -27,7 +27,7 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="flex justify-center items-center h-screen bg-gray-100">
+        <div className="flex justify-center items-center h-screen">
             <form onSubmit={handleRegister} className="bg-white p-8 rounded-2xl shadow-md w-96">
                 <h2 className="text-2xl font-bold mb-6 text-center">Cadastro</h2>
 

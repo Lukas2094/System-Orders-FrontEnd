@@ -19,7 +19,7 @@ export default async function UsersPage() {
     return (
         <div className="flex">
             <main className="flex-1 p-6 bg-gray-100 min-h-screen">
-                <h2 className="text-2xl font-bold mb-4">Pedidos</h2>
+                <h2 className="text-2xl font-bold mb-4">Usuários</h2>
                 <UserTable
                     users={usersSSR}
                     roles={roles}

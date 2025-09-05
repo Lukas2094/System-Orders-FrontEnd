@@ -14,12 +14,12 @@ export default async function RootLayout({
 
   return (
     <html lang="pt-BR">
-      <body className="flex h-screen overflow-hidden">
+      <body className="flex h-screen overflow-hidden !bg-gradient-to-br from-blue-600 via-indigo-700 to-sky-500">
         <RoleProvider>
         {isAuthenticated && <Sidebar />}
         <main
           className={`${isAuthenticated ? 'flex-1' : 'w-full'} 
-            p-6 bg-gray-100 overflow-y-auto`}
+            p-6 overflow-y-auto`}
           >
           {children}
         </main>

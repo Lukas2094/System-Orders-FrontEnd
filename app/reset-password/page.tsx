@@ -22,7 +22,7 @@ export default function ForgotPasswordPage() {
     };
 
     return (
-        <div className="flex justify-center items-center h-screen bg-gray-100">
+        <div className="flex justify-center items-center h-screen">
             <form onSubmit={handleReset} className="bg-white p-8 rounded-2xl shadow-md w-96">
                 <h2 className="text-2xl font-bold mb-6 text-center">Redefinir Senha</h2>
 

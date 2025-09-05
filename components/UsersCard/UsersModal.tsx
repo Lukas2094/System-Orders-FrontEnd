@@ -38,8 +38,21 @@ export default function UserModal({
       return;
     }
 
+    // pega o id do usuário logado a partir do token salvo
+    const loggedUserId = (() => {
+      const token = Cookies.get("token");
+      if (!token) return null;
+      try {
+        const decoded: any = jwtDecode(token);
+        return decoded.sub || decoded.id || null;
+      } catch {
+        return null;
+      }
+    })();
+
     try {
       if (user) {
+        // edição de usuário
         await api.put(`/users/${user.id}`, {
           name,
           email,
@@ -48,18 +61,21 @@ export default function UserModal({
           roleId: Number(roleId),
         });
 
-        const tokenResponse = await api.post(`/users/${user.id}/token`);
-        const newToken = tokenResponse.data.token;
+        // ✅ só renova token se o usuário editado for o próprio usuário logado
+        if (loggedUserId && user.id === Number(loggedUserId)) {
+          const tokenResponse = await api.post(`/users/${user.id}/token`);
+          const newToken = tokenResponse.data.token;
 
-        if (newToken) {
-          localStorage.setItem("token", newToken); 
-          Cookies.set("token", newToken, { expires: 1, path: "/" });
-      
-          const selectedRole = roles.find(r => r.id === Number(roleId));
+          if (newToken) {
+            localStorage.setItem("token", newToken);
+            Cookies.set("token", newToken, { expires: 1, path: "/" });
+
+            const selectedRole = roles.find(r => r.id === Number(roleId));
             if (selectedRole) {
-                setRole(selectedRole.id);      
+              setRole(selectedRole.id);
             }
-          setNameContext(name);
+            setNameContext(name);
+          }
         }
       } else {
         await api.post(`/auth/register`, {
@@ -77,7 +93,6 @@ export default function UserModal({
       alert(err?.response?.data?.message || "Erro ao salvar usuário.");
     }
   };
-
 
 
   return (
