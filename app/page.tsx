@@ -1,7 +1,32 @@
 import { FaUsers, FaBox, FaShoppingCart, FaChartBar } from "react-icons/fa";
 import React from "react";
 
+async function getDashboardData() {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+
+  const [ordersRes, productsRes, usersRes] = await Promise.all([
+    fetch(`${baseUrl}/orders`, { cache: "no-store" }),
+    fetch(`${baseUrl}/products`, { cache: "no-store" }),
+    fetch(`${baseUrl}/users`, { cache: "no-store" }),
+  ]);
+
+  const [orders, products, users] = await Promise.all([
+    ordersRes.json(),
+    productsRes.json(),
+    usersRes.json(),
+  ]);
+
+  return {
+    orders: orders.length || 0,
+    products: products.length || 0,
+    users: users.length || 0,
+    reports: 12, // pode ser calculado depois via rota no Nest
+  };
+}
+
 export default async function HomePage() {
+  const { orders, products, users, reports } = await getDashboardData();
+
   return (
     <div className="flex">
       <main className="flex-1 p-6 bg-gray-100 min-h-screen">
@@ -19,7 +44,7 @@ export default async function HomePage() {
             <FaShoppingCart className="text-blue-600 text-3xl" />
             <div>
               <p className="text-gray-500">Pedidos</p>
-              <h3 className="text-xl font-bold">128</h3>
+              <h3 className="text-xl font-bold">{orders}</h3>
             </div>
           </div>
 
@@ -27,7 +52,7 @@ export default async function HomePage() {
             <FaBox className="text-green-600 text-3xl" />
             <div>
               <p className="text-gray-500">Produtos</p>
-              <h3 className="text-xl font-bold">342</h3>
+              <h3 className="text-xl font-bold">{products}</h3>
             </div>
           </div>
 
@@ -35,7 +60,7 @@ export default async function HomePage() {
             <FaUsers className="text-purple-600 text-3xl" />
             <div>
               <p className="text-gray-500">Usuários</p>
-              <h3 className="text-xl font-bold">54</h3>
+              <h3 className="text-xl font-bold">{users}</h3>
             </div>
           </div>
 
@@ -43,7 +68,7 @@ export default async function HomePage() {
             <FaChartBar className="text-orange-600 text-3xl" />
             <div>
               <p className="text-gray-500">Relatórios</p>
-              <h3 className="text-xl font-bold">12</h3>
+              <h3 className="text-xl font-bold">{reports}</h3>
             </div>
           </div>
         </div>
