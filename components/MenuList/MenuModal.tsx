@@ -8,8 +8,11 @@ import * as MdIcons from 'react-icons/md';
 import * as BiIcons from 'react-icons/bi';
 import * as GiIcons from 'react-icons/gi';
 import * as IoIcons from 'react-icons/io5';
+import * as RiIcons from 'react-icons/ri';
+import * as SiIcons from 'react-icons/si';
 
 import { Menu } from '@/types/menus';
+import { useToast } from '../Toast/Toast';
 
 type Role = {
     id: number;
@@ -24,7 +27,19 @@ type MenuModalProps = {
     rolesList: Role[];
 };
 
-// Mesclando todas as famílias de ícones
+// Ícones separados por família para melhor organização
+const IconFamilies = {
+    Fa: { name: 'Font Awesome', icons: FaIcons },
+    Ai: { name: 'Ant Design', icons: AiIcons },
+    Md: { name: 'Material Design', icons: MdIcons },
+    Bi: { name: 'BoxIcons', icons: BiIcons },
+    Gi: { name: 'Game Icons', icons: GiIcons },
+    Io: { name: 'Ionicons', icons: IoIcons },
+    Ri: { name: 'Remix Icon', icons: RiIcons },
+    Si: { name: 'Simple Icons', icons: SiIcons },
+};
+
+// Combinar todos os ícones
 const AllIcons = {
     ...FaIcons,
     ...AiIcons,
@@ -32,6 +47,8 @@ const AllIcons = {
     ...BiIcons,
     ...GiIcons,
     ...IoIcons,
+    ...RiIcons,
+    ...SiIcons,
 };
 
 export default function MenuModal({ isOpen, onClose, onSave, menu, rolesList }: MenuModalProps) {
@@ -40,7 +57,8 @@ export default function MenuModal({ isOpen, onClose, onSave, menu, rolesList }: 
     const [icon, setIcon] = useState('');
     const [iconSearch, setIconSearch] = useState('');
     const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
-
+    const [showIconSuggestions, setShowIconSuggestions] = useState(false);
+    const { showToast } = useToast();
     const isEdit = !!menu;
 
     useEffect(() => {
@@ -63,14 +81,79 @@ export default function MenuModal({ isOpen, onClose, onSave, menu, rolesList }: 
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if(!isEdit) {
+            if (!name.trim() || !path.trim() || !icon.trim()) {
+                showToast("Preencha todos os campos obrigatórios (Nome, Path e Icon).");
+                return;
+            }
+
+            if (selectedRoles.length === 0) {
+                showToast("Selecione pelo menos uma Role.");
+                return;
+            }
+        }
+       
         onSave({ id: menu?.id, name, path, icon, roleIds: selectedRoles });
         onClose();
     };
 
-    // Filtra todos os ícones
-    const filteredIcons = Object.keys(AllIcons).filter((key) =>
-        key.toLowerCase().includes(iconSearch.toLowerCase())
-    );
+    // Filtra todos os ícones com busca inteligente
+    const filteredIcons = Object.keys(AllIcons).filter((key) => {
+        const searchTerm = iconSearch.toLowerCase().trim();
+        if (!searchTerm) return false;
+
+        // Busca exata ou parcial no nome do ícone
+        if (key.toLowerCase().includes(searchTerm)) return true;
+
+        // Busca considerando prefixo de família
+        const [prefix, ...rest] = searchTerm.split(' ');
+        const iconName = rest.join(''); // caso o usuário digite "fa sql"
+        if (Object.keys(IconFamilies).includes(prefix.toUpperCase())) {
+            return key.toLowerCase().includes(iconName.toLowerCase()) && key.startsWith(prefix.toUpperCase());
+        }
+
+        return false;
+    });
+
+    // Sugestões de busca baseadas no texto digitado
+    const getSearchSuggestions = () => {
+        if (iconSearch.length < 1) return [];
+
+        const searchTerm = iconSearch.toLowerCase().trim();
+        const suggestions: string[] = [];
+
+        // Sugere famílias
+        for (const [prefix, family] of Object.entries(IconFamilies)) {
+            if (prefix.toLowerCase().includes(searchTerm) || family.name.toLowerCase().includes(searchTerm)) {
+                suggestions.push(`${prefix} [${family.name}]`);
+            }
+        }
+
+        // Sugere ícones que contêm o termo
+        Object.keys(AllIcons).forEach(iconName => {
+            if (iconName.toLowerCase().includes(searchTerm)) {
+                suggestions.push(iconName);
+            }
+        });
+
+        return suggestions.slice(0, 10);
+    };
+
+    const searchSuggestions = getSearchSuggestions();
+
+    const handleSuggestionClick = (suggestion: string) => {
+        // Se for uma sugestão de família (contém [])
+        if (suggestion.includes('[')) {
+            const familyPrefix = suggestion.split(' ')[0];
+            setIconSearch(familyPrefix + ' ');
+            setShowIconSuggestions(false);
+        } else {
+            // Se for um ícone específico
+            setIcon(suggestion);
+            setIconSearch(suggestion);
+            setShowIconSuggestions(false);
+        }
+    };
 
     return (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
@@ -107,41 +190,112 @@ export default function MenuModal({ isOpen, onClose, onSave, menu, rolesList }: 
                         />
                     </div>
 
-                    <div>
+                    <div className="relative">
                         <label className="block text-sm font-medium text-gray-700">Icon</label>
                         <input
                             type="text"
-                            placeholder="Buscar ícone..."
+                            placeholder="Ex: FaHome, AiOutlineUser, ou digite 'fa' para ver sugestões..."
                             value={iconSearch}
                             onChange={e => {
-                                const val = e.target.value.replace(/\s+/g, '');
+                                const val = e.target.value;
                                 setIconSearch(val);
-                                setIcon(val);
+                                setShowIconSuggestions(val.length > 1);
+                                
+                                // Só atualiza o ícone selecionado se encontrar uma correspondência exata
+                                if (Object.keys(AllIcons).includes(val)) {
+                                    setIcon(val);
+                                }
+                            }}
+                            onFocus={() => setShowIconSuggestions(iconSearch.length > 1)}
+                            onBlur={() => setTimeout(() => setShowIconSuggestions(false), 200)}
+                            onKeyDown={(e) => {
+                                // Permite apagar completamente o campo
+                                if (e.key === 'Backspace' || e.key === 'Delete') {
+                                    setIcon('');
+                                }
                             }}
                             className="mt-1 block w-full border rounded-lg p-2 focus:ring focus:ring-blue-300"
                             required
                         />
-                        {/* Lista de ícones filtrados */}
-                        <div className="grid grid-cols-6 gap-2 mt-2 max-h-40 overflow-y-auto border rounded p-2">
-                            {filteredIcons.slice(0, 50).map((iconName) => {
-                                const IconComp = (AllIcons as any)[iconName];
-                                return (
+                        
+                        {/* Sugestões de busca */}
+                        {showIconSuggestions && searchSuggestions.length > 0 && (
+                            <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg">
+                                {searchSuggestions.map((suggestion, index) => (
                                     <button
-                                        key={iconName}
+                                        key={index}
                                         type="button"
-                                        onClick={() => {
-                                            setIcon(iconName);
-                                            setIconSearch(iconName);
-                                        }}
-                                        className={`flex flex-col items-center justify-center p-1 border rounded hover:bg-gray-100 ${icon === iconName ? 'bg-blue-100 border-blue-400' : ''
-                                            }`}
+                                        onClick={() => handleSuggestionClick(suggestion)}
+                                        className="w-full text-left px-4 py-2 hover:bg-gray-100 border-b last:border-b-0"
                                     >
-                                        <IconComp size={20} />
-                                        <span className="text-xs">{iconName}</span>
+                                        {suggestion}
                                     </button>
-                                );
-                            })}
+                                ))}
+                            </div>
+                        )}
+                        
+                        {/* Legenda das famílias */}
+                        <div className="mt-2 text-xs text-gray-500">
+                            <span className="font-medium">Famílias disponíveis: </span>
+                            {Object.entries(IconFamilies).map(([prefix, family], index) => (
+                                <span key={prefix}>
+                                    {index > 0 && ', '}
+                                    <span className="font-mono">{prefix}</span> ({family.name})
+                                </span>
+                            ))}
                         </div>
+                        
+                        {/* Lista de ícones filtrados */}
+                        {iconSearch.length > 0 && (
+                            <div className="mt-3 border rounded-lg p-3 bg-gray-50">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-sm text-gray-600">
+                                        {filteredIcons.length} ícones encontrados
+                                    </span>
+                                    {filteredIcons.length > 50 && (
+                                        <span className="text-xs text-gray-500">
+                                            Mostrando os 50 primeiros
+                                        </span>
+                                    )}
+                                </div>
+                                
+                                <div className="grid grid-cols-5 sm:grid-cols-6 gap-2 max-h-40 overflow-y-auto">
+                                    {filteredIcons.slice(0, 50).map((iconName) => {
+                                        const IconComp = (AllIcons as any)[iconName];
+                                        return (
+                                            <button
+                                                key={iconName}
+                                                type="button"
+                                                onClick={() => {
+                                                    setIcon(iconName);
+                                                    setIconSearch(iconName);
+                                                    setShowIconSuggestions(false);
+                                                }}
+                                                className={`flex flex-col items-center justify-center p-2 rounded-lg transition-all ${
+                                                    icon === iconName 
+                                                        ? 'bg-blue-100 border-2 border-blue-400 shadow-inner' 
+                                                        : 'bg-white border border-gray-200 hover:bg-gray-100'
+                                                }`}
+                                                title={iconName}
+                                            >
+                                                <IconComp size={18} className={
+                                                    icon === iconName ? "text-blue-600" : "text-gray-700"
+                                                } />
+                                                <span className="mt-1 text-[0.6rem] font-medium text-gray-600 truncate w-full text-center">
+                                                    {iconName}
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                
+                                {filteredIcons.length === 0 && (
+                                    <div className="text-center py-3 text-gray-500 text-sm">
+                                        Nenhum ícone encontrado. Tente digitar o prefixo da família (Fa, Ai, Md, etc.)
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div>

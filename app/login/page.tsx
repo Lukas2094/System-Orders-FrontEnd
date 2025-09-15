@@ -51,7 +51,7 @@ export default function LoginPage() {
                 <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Bem-vindo 👋</h2>
 
                 {message && (
-                    <div className="mb-4 text-center text-sm font-medium text-red-600 bg-red-100 py-2 px-3 rounded-lg">
+                    <div className="mb-4 text-center text-sm font-medium text-green-600 bg-red-100 py-2 px-3 rounded-lg">
                         {message}
                     </div>
                 )}

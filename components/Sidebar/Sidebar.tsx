@@ -34,7 +34,7 @@ export default function Sidebar() {
         );
 
         const enhancedMenus = filtered.map((menu: any) => {
-          if (menu.name === "Configurações") {
+          if (menu.id === 3) {
             return {
               ...menu,
               hasDropdown: true,
@@ -61,7 +61,7 @@ export default function Sidebar() {
 
   useEffect(() => {
     socket.on("menuCreated", (menu) => {
-      const enhancedMenu = menu.name === "Configurações"
+      const enhancedMenu = menu.id === 3
         ? {
           ...menu, hasDropdown: true, submenus: [
             { id: 31, name: "Lista de Usuários", path: "/users", icon: "FaUsers" },
@@ -74,7 +74,7 @@ export default function Sidebar() {
     });
 
     socket.on("menuUpdated", (menu) => {
-      const enhancedMenu = menu.name === "Configurações"
+      const enhancedMenu = menu.id === 3
         ? {
           ...menu, hasDropdown: true, submenus: [
             { id: 31, name: "Lista de Usuários", path: "/users", icon: "FaUsers" },
@@ -166,7 +166,7 @@ export default function Sidebar() {
         {menus.map((menu: any) => {
           // Use FaCog especificamente para o menu "Configurações"
           let Icon;
-          if (menu.name === "Configurações") {
+          if (menu.id === 3) {
             Icon = FaCog;
           } else {
             Icon = (Icons as any)[menu.icon as keyof typeof Icons] || Icons.FaBox;
