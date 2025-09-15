@@ -6,6 +6,7 @@ import { useRole } from "@/utils/RoleContext";
 import { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
+import { io } from "socket.io-client";
 
 export default function UserModal({
   user,
@@ -38,9 +39,8 @@ export default function UserModal({
       return;
     }
 
-    // pega o id do usuário logado a partir do token salvo
     const loggedUserId = (() => {
-      const token = Cookies.get("token");
+      const token = localStorage.getItem("token") || Cookies.get("token");
       if (!token) return null;
       try {
         const decoded: any = jwtDecode(token);
@@ -52,7 +52,6 @@ export default function UserModal({
 
     try {
       if (user) {
-        // edição de usuário
         await api.put(`/users/${user.id}`, {
           name,
           email,
@@ -61,20 +60,17 @@ export default function UserModal({
           roleId: Number(roleId),
         });
 
-        // ✅ só renova token se o usuário editado for o próprio usuário logado
-        if (loggedUserId && user.id === Number(loggedUserId)) {
-          const tokenResponse = await api.post(`/users/${user.id}/token`);
-          const newToken = tokenResponse.data.token;
+        const tokenResponse = await api.post(`/users/${user.id}/token`);
+        const newToken = tokenResponse.data.token;
 
-          if (newToken) {
-            localStorage.setItem("token", newToken);
-            Cookies.set("token", newToken, { expires: 1, path: "/" });
+        if (newToken) {
+          localStorage.setItem("token", newToken);
+          Cookies.set("token", newToken);
 
-            const selectedRole = roles.find(r => r.id === Number(roleId));
-            if (selectedRole) {
-              setRole(selectedRole.id);
-            }
-            setNameContext(name);
+          if (loggedUserId && user.id === Number(loggedUserId)) {
+            const decoded: any = jwtDecode(newToken);
+            setRole(decoded.roleId);
+            setNameContext(decoded.name);
           }
         }
       } else {
@@ -94,6 +90,17 @@ export default function UserModal({
     }
   };
 
+  useEffect(() => {
+    const socket = io(`${api.defaults.baseURL}`);
+
+    socket.on('userUpdated', (user) => {
+      console.log('Usuário atualizado via WS:', user);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
