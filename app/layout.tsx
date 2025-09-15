@@ -2,6 +2,7 @@ import './globals.css';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import { cookies } from 'next/headers';
 import { RoleProvider } from "@/utils/RoleContext";
+import { ToastProvider } from '@/components/Toast/Toast';
 
 export default async function RootLayout({
   children,
@@ -14,17 +15,21 @@ export default async function RootLayout({
 
   return (
     <html lang="pt-BR">
+    
       <body className="flex h-screen overflow-hidden !bg-gradient-to-br from-blue-600 via-indigo-700 to-sky-500">
-        <RoleProvider>
-        {isAuthenticated && <Sidebar />}
-        <main
-          className={`${isAuthenticated ? 'flex-1' : 'w-full'} 
-            p-6 overflow-y-auto`}
-          >
-          {children}
-        </main>
-        </RoleProvider>
-      </body>
+        <ToastProvider>
+          <RoleProvider>
+          {isAuthenticated && <Sidebar />}
+          <main
+            className={`${isAuthenticated ? 'flex-1' : 'w-full'} 
+              p-6 overflow-y-auto`}
+            >
+            {children}
+          </main>
+          </RoleProvider>
+        </ToastProvider>
+        </body>
+      
     </html>
   )
 }

@@ -91,7 +91,7 @@ export default function UserModal({
   };
 
   useEffect(() => {
-    const socket = io(`${api.defaults.baseURL}`);
+    const socket = io(api.defaults.baseURL);
 
     socket.on('userUpdated', (user) => {
       console.log('Usuário atualizado via WS:', user);

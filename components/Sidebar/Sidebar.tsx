@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FaSignOutAlt } from "react-icons/fa";
+import { FaSignOutAlt, FaChevronDown, FaChevronRight, FaCog } from "react-icons/fa";
 import * as Icons from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useRole } from "@/utils/RoleContext";
@@ -14,6 +14,7 @@ const socket = io(api.defaults.baseURL);
 
 export default function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const router = useRouter();
   const { role, name } = useRole();
   const [menus, setMenus] = useState<any[]>([]);
@@ -27,12 +28,29 @@ export default function Sidebar() {
           console.error("Erro ao buscar menus:", response.statusText);
           return;
         }
-        
+
         const filtered = response.data.filter((menu: any) =>
-          menu.roles.some((r: any) => r.id=== role)
+          menu.roles.some((r: any) => r.id === role)
         );
 
-        setMenus(filtered);
+        const enhancedMenus = filtered.map((menu: any) => {
+          if (menu.name === "Configurações") {
+            return {
+              ...menu,
+              hasDropdown: true,
+              submenus: [
+                { id: 31, name: "Lista de Usuários", path: "/users", icon: "FaUsers" },
+                { id: 32, name: "Gerenciar Menu", path: "/menu", icon: "FaBars" }
+              ]
+            };
+          }
+          return {
+            ...menu,
+            hasDropdown: false
+          };
+        });
+
+        setMenus(enhancedMenus);
       } catch (error) {
         console.error("Erro ao buscar menus:", error);
       }
@@ -41,12 +59,33 @@ export default function Sidebar() {
     if (role) fetchMenus();
   }, [role]);
 
-
   useEffect(() => {
-    socket.on("menuCreated", (menu) => setMenus((prev: any[]) => [...prev, menu]));
-    socket.on("menuUpdated", (menu) =>
-      setMenus((prev: any[]) => prev.map((m: any) => (m.id === menu.id ? menu : m)))
-    );
+    socket.on("menuCreated", (menu) => {
+      const enhancedMenu = menu.name === "Configurações"
+        ? {
+          ...menu, hasDropdown: true, submenus: [
+            { id: 31, name: "Lista de Usuários", path: "/users", icon: "FaUsers" },
+            { id: 32, name: "Gerenciar Menu", path: "/menu", icon: "FaBars" }
+          ]
+        }
+        : { ...menu, hasDropdown: false };
+
+      setMenus((prev: any[]) => [...prev, enhancedMenu]);
+    });
+
+    socket.on("menuUpdated", (menu) => {
+      const enhancedMenu = menu.name === "Configurações"
+        ? {
+          ...menu, hasDropdown: true, submenus: [
+            { id: 31, name: "Lista de Usuários", path: "/users", icon: "FaUsers" },
+            { id: 32, name: "Gerenciar Menu", path: "/menu", icon: "FaBars" }
+          ]
+        }
+        : { ...menu, hasDropdown: false };
+
+      setMenus((prev: any[]) => prev.map((m: any) => (m.id === menu.id ? enhancedMenu : m)));
+    });
+
     socket.on("menuDeleted", (menuId) =>
       setMenus((prev: any[]) => prev.filter((m) => m.id !== menuId))
     );
@@ -57,6 +96,10 @@ export default function Sidebar() {
       socket.off("menuDeleted");
     };
   }, []);
+
+  const toggleDropdown = (menuId: string) => {
+    setOpenDropdown(openDropdown === menuId ? null : menuId);
+  };
 
   const handleLogout = async () => {
     try {
@@ -98,12 +141,15 @@ export default function Sidebar() {
   return (
     <div
       onMouseEnter={() => setIsExpanded(true)}
-      onMouseLeave={() => setIsExpanded(false)}
+      onMouseLeave={() => {
+        setIsExpanded(false);
+        setOpenDropdown(null);
+      }}
       className={`h-screen bg-gray-800 text-white flex flex-col p-4 transition-all duration-300 
-        ${isExpanded ? "w-64" : "w-20"}`}
+        ${isExpanded ? "w-64" : "w-20"} cursor-pointer`}
     >
       <Avatar name={name} isExpanded={isExpanded} />
-      <Link href="/" className="flex items-center mb-6">
+      <Link href="/" className="flex items-center mb-6 cursor-pointer">
         <Image
           src="/imgs/png/order.png"
           alt="Sidebar Logo"
@@ -116,14 +162,69 @@ export default function Sidebar() {
       </Link>
 
       {/* Menus dinâmicos */}
-      <nav className="flex flex-col gap-4 flex-grow">
+      <nav className="flex flex-col gap-1 flex-grow">
         {menus.map((menu: any) => {
-          const Icon = (Icons as any)[menu.icon as keyof typeof Icons] || Icons.FaBox;
+          // Use FaCog especificamente para o menu "Configurações"
+          let Icon;
+          if (menu.name === "Configurações") {
+            Icon = FaCog;
+          } else {
+            Icon = (Icons as any)[menu.icon as keyof typeof Icons] || Icons.FaBox;
+          }
+
+          if (menu.hasDropdown) {
+            return (
+              <div key={menu.id} className="flex flex-col">
+                <button
+                  onClick={() => toggleDropdown(menu.id.toString())}
+                  className="flex items-center justify-between gap-3 p-2 rounded hover:bg-gray-700 transition w-full cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon size={20} />
+                    <span
+                      className={`whitespace-nowrap transition-all duration-300 
+                        ${isExpanded ? "opacity-100" : "opacity-0 w-0"}`}
+                    >
+                      {menu.name}
+                    </span>
+                  </div>
+                  {isExpanded && (
+                    <span className="transition-all duration-300">
+                      {openDropdown === menu.id.toString() ? <FaChevronDown size={14} /> : <FaChevronRight size={14} />}
+                    </span>
+                  )}
+                </button>
+
+                {/* Submenu Dropdown */}
+                {openDropdown === menu.id.toString() && isExpanded && (
+                  <div className="ml-6 mt-1 flex flex-col gap-1 border-l-2 border-gray-600 pl-3">
+                    {menu.submenus.map((submenu: any) => {
+                      const SubIcon = (Icons as any)[submenu.icon as keyof typeof Icons] || Icons.FaBox;
+                      return (
+                        <Link
+                          key={submenu.id}
+                          href={submenu.path}
+                          className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition text-sm cursor-pointer"
+                          onClick={() => setOpenDropdown(null)}
+                        >
+                          <SubIcon size={16} />
+                          <span className="whitespace-nowrap">
+                            {submenu.name}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
           return (
             <Link
               key={menu.id}
               href={menu.path}
-              className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition"
+              className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition cursor-pointer"
             >
               <Icon size={20} />
               <span

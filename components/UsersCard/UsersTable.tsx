@@ -13,7 +13,7 @@ type UserTableProps = {
     loggedUser?: any;
 };
 
-const socket = io("http://localhost:3000");
+const socket = io(api.defaults.baseURL);
 
 export default function UsersTable({ users, roles, loggedUser }: UserTableProps) {
     const [userList, setUserList] = useState(users);
