@@ -82,7 +82,7 @@ export async function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
   const { pathname } = req.nextUrl;
 
-  const publicPaths = ["/login", "/register", "/reset-password", "/unauthorized"];
+  const publicPaths = ["/login", "/register", "/reset-password"];
   const apiPaths = ["/api/"];
 
   // Ignora rotas de API
@@ -106,10 +106,10 @@ export async function middleware(req: NextRequest) {
       // Decodifica o token para obter a roleId do usuário
       const decoded: TokenPayload = jwtDecode(token);
       
-      if (!decoded || !decoded.roleId) {
-        console.warn('Token inválido ou sem roleId');
-        return NextResponse.redirect(new URL("/unauthorized", req.url));
-      }
+      // if (!decoded || !decoded.roleId) {
+      //   console.warn('Token inválido ou sem roleId');
+      //   return NextResponse.redirect(new URL("/404", req.url));
+      // }
 
       const userRoleId = decoded.roleId;
       console.log(`Usuário roleId: ${userRoleId} tentando acessar: ${pathname}`);
@@ -130,10 +130,10 @@ export async function middleware(req: NextRequest) {
           role => role.id === userRoleId
         );
 
-        if (!hasPermission) {
-          console.warn(`Acesso negado: Usuário roleId ${userRoleId} tentou acessar ${pathname}`);
-          return NextResponse.redirect(new URL("/unauthorized", req.url));
-        }
+        // if (!hasPermission) {
+        //   console.warn(`Acesso negado: Usuário roleId ${userRoleId} tentou acessar ${pathname}`);
+        //   return NextResponse.redirect(new URL("/404", req.url));
+        // }
         
         console.log(`Acesso permitido: Usuário roleId ${userRoleId} para ${pathname}`);
       } else {
