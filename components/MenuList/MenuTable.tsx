@@ -128,6 +128,7 @@ export default function MenuTable({ menusList, rolesList }: MenuTableProps) {
                 menu={selectedMenu}
                 onClose={() => setModalOpen(false)}
                 onSave={async (data) => {
+                    console.log("Dados enviados:", data);
                     try {
                         if (data.id) {
                             await api.put(`/menus/${data.id}`, data);

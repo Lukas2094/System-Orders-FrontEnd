@@ -94,7 +94,7 @@ export default function UserModal({
     const socket = io(api.defaults.baseURL);
 
     socket.on('userUpdated', (user) => {
-      console.log('Usuário atualizado via WS:', user);
+      console.log('Usuário atualizado via WS:');
     });
 
     return () => {

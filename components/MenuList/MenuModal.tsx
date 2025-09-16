@@ -14,10 +14,8 @@ import * as SiIcons from 'react-icons/si';
 import { Menu } from '@/types/menus';
 import { useToast } from '../Toast/Toast';
 
-type Role = {
-    id: number;
-    name: string;
-};
+type Role = { id: number; name: string; };
+type SubmenuData = { id?: number; name: string; path: string; icon?: string };
 
 type MenuModalProps = {
     isOpen: boolean;
@@ -27,7 +25,7 @@ type MenuModalProps = {
     rolesList: Role[];
 };
 
-// Ícones separados por família para melhor organização
+// Ícones separados por família
 const IconFamilies = {
     Fa: { name: 'Font Awesome', icons: FaIcons },
     Ai: { name: 'Ant Design', icons: AiIcons },
@@ -38,18 +36,7 @@ const IconFamilies = {
     Ri: { name: 'Remix Icon', icons: RiIcons },
     Si: { name: 'Simple Icons', icons: SiIcons },
 };
-
-// Combinar todos os ícones
-const AllIcons = {
-    ...FaIcons,
-    ...AiIcons,
-    ...MdIcons,
-    ...BiIcons,
-    ...GiIcons,
-    ...IoIcons,
-    ...RiIcons,
-    ...SiIcons,
-};
+const AllIcons = { ...FaIcons, ...AiIcons, ...MdIcons, ...BiIcons, ...GiIcons, ...IoIcons, ...RiIcons, ...SiIcons };
 
 export default function MenuModal({ isOpen, onClose, onSave, menu, rolesList }: MenuModalProps) {
     const [name, setName] = useState('');
@@ -57,6 +44,7 @@ export default function MenuModal({ isOpen, onClose, onSave, menu, rolesList }: 
     const [icon, setIcon] = useState('');
     const [iconSearch, setIconSearch] = useState('');
     const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
+    const [submenus, setSubmenus] = useState<SubmenuData[]>([]);
     const [showIconSuggestions, setShowIconSuggestions] = useState(false);
     const { showToast } = useToast();
     const isEdit = !!menu;
@@ -68,87 +56,73 @@ export default function MenuModal({ isOpen, onClose, onSave, menu, rolesList }: 
             setIcon(menu.icon);
             setSelectedRoles(menu.roleIds || []);
             setIconSearch(menu.icon);
+            setSubmenus(menu.submenus || []);
         } else {
             setName('');
             setPath('');
             setIcon('');
             setSelectedRoles([]);
             setIconSearch('');
+            setSubmenus([]);
         }
     }, [menu, isOpen]);
 
     if (!isOpen) return null;
 
+    const handleAddSubmenu = () => setSubmenus(prev => [...prev, { name: '', path: '' }]);
+    const handleRemoveSubmenu = (index: number) => setSubmenus(prev => prev.filter((_, i) => i !== index));
+    const handleSubmenuChange = (index: number, field: 'name' | 'path' | 'icon', value: string) =>
+        setSubmenus(prev => prev.map((s, i) => i === index ? { ...s, [field]: value } : s));
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if(!isEdit) {
-            if (!name.trim() || !path.trim() || !icon.trim()) {
-                showToast("Preencha todos os campos obrigatórios (Nome, Path e Icon).");
-                return;
-            }
-
-            if (selectedRoles.length === 0) {
-                showToast("Selecione pelo menos uma Role.");
-                return;
-            }
+        if (!name.trim() || !path.trim() || !icon.trim()) {
+            showToast("Preencha todos os campos obrigatórios (Nome, Path e Icon).");
+            return;
         }
-       
-        onSave({ id: menu?.id, name, path, icon, roleIds: selectedRoles });
+        if (selectedRoles.length === 0) {
+            showToast("Selecione pelo menos uma Role.");
+            return;
+        }
+        onSave({ id: menu?.id, name, path, icon, roleIds: selectedRoles, submenus });
         onClose();
     };
 
-    // Filtra todos os ícones com busca inteligente
+    // Filtro de ícones
     const filteredIcons = Object.keys(AllIcons).filter((key) => {
         const searchTerm = iconSearch.toLowerCase().trim();
         if (!searchTerm) return false;
-
-        // Busca exata ou parcial no nome do ícone
         if (key.toLowerCase().includes(searchTerm)) return true;
-
-        // Busca considerando prefixo de família
         const [prefix, ...rest] = searchTerm.split(' ');
-        const iconName = rest.join(''); // caso o usuário digite "fa sql"
+        const iconName = rest.join('');
         if (Object.keys(IconFamilies).includes(prefix.toUpperCase())) {
             return key.toLowerCase().includes(iconName.toLowerCase()) && key.startsWith(prefix.toUpperCase());
         }
-
         return false;
     });
 
-    // Sugestões de busca baseadas no texto digitado
     const getSearchSuggestions = () => {
         if (iconSearch.length < 1) return [];
-
         const searchTerm = iconSearch.toLowerCase().trim();
         const suggestions: string[] = [];
-
-        // Sugere famílias
         for (const [prefix, family] of Object.entries(IconFamilies)) {
             if (prefix.toLowerCase().includes(searchTerm) || family.name.toLowerCase().includes(searchTerm)) {
                 suggestions.push(`${prefix} [${family.name}]`);
             }
         }
-
-        // Sugere ícones que contêm o termo
         Object.keys(AllIcons).forEach(iconName => {
-            if (iconName.toLowerCase().includes(searchTerm)) {
-                suggestions.push(iconName);
-            }
+            if (iconName.toLowerCase().includes(searchTerm)) suggestions.push(iconName);
         });
-
         return suggestions.slice(0, 10);
     };
 
     const searchSuggestions = getSearchSuggestions();
-
     const handleSuggestionClick = (suggestion: string) => {
-        // Se for uma sugestão de família (contém [])
         if (suggestion.includes('[')) {
             const familyPrefix = suggestion.split(' ')[0];
             setIconSearch(familyPrefix + ' ');
             setShowIconSuggestions(false);
         } else {
-            // Se for um ícone específico
             setIcon(suggestion);
             setIconSearch(suggestion);
             setShowIconSuggestions(false);
@@ -159,81 +133,54 @@ export default function MenuModal({ isOpen, onClose, onSave, menu, rolesList }: 
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
             <div className="bg-white rounded-2xl shadow-lg w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto">
                 <div className="flex justify-between items-center border-b pb-3 mb-4">
-                    <h3 className="text-lg font-semibold">
-                        {isEdit ? 'Editar Menu' : 'Novo Menu'}
-                    </h3>
-                    <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
-                        <FaTimes />
-                    </button>
+                    <h3 className="text-lg font-semibold">{isEdit ? 'Editar Menu' : 'Novo Menu'}</h3>
+                    <button onClick={onClose} className="text-gray-500 hover:text-gray-800"><FaTimes /></button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Nome */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Nome</label>
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={e => setName(e.target.value)}
-                            className="mt-1 block w-full border rounded-lg p-2 focus:ring focus:ring-blue-300"
-                            required
-                        />
+                        <input type="text" value={name} onChange={e => setName(e.target.value)}
+                            className="mt-1 block w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" required />
                     </div>
 
+                    {/* Path */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Path</label>
-                        <input
-                            type="text"
-                            value={path}
-                            onChange={e => setPath(e.target.value)}
-                            className="mt-1 block w-full border rounded-lg p-2 focus:ring focus:ring-blue-300"
-                            required
-                        />
+                        <input type="text" value={path} onChange={e => setPath(e.target.value)}
+                            className="mt-1 block w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" required />
                     </div>
 
+                    {/* Icon */}
                     <div className="relative">
                         <label className="block text-sm font-medium text-gray-700">Icon</label>
-                        <input
-                            type="text"
-                            placeholder="Ex: FaHome, AiOutlineUser, ou digite 'fa' para ver sugestões..."
+                        <input type="text"
+                            placeholder="Ex: FaHome, AiOutlineUser"
                             value={iconSearch}
                             onChange={e => {
                                 const val = e.target.value;
                                 setIconSearch(val);
                                 setShowIconSuggestions(val.length > 1);
-                                
-                                // Só atualiza o ícone selecionado se encontrar uma correspondência exata
-                                if (Object.keys(AllIcons).includes(val)) {
-                                    setIcon(val);
-                                }
+                                if (Object.keys(AllIcons).includes(val)) setIcon(val);
                             }}
                             onFocus={() => setShowIconSuggestions(iconSearch.length > 1)}
                             onBlur={() => setTimeout(() => setShowIconSuggestions(false), 200)}
-                            onKeyDown={(e) => {
-                                // Permite apagar completamente o campo
-                                if (e.key === 'Backspace' || e.key === 'Delete') {
-                                    setIcon('');
-                                }
-                            }}
                             className="mt-1 block w-full border rounded-lg p-2 focus:ring focus:ring-blue-300"
                             required
                         />
-                        
-                        {/* Sugestões de busca */}
                         {showIconSuggestions && searchSuggestions.length > 0 && (
                             <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg">
                                 {searchSuggestions.map((suggestion, index) => (
-                                    <button
-                                        key={index}
-                                        type="button"
-                                        onClick={() => handleSuggestionClick(suggestion)}
-                                        className="w-full text-left px-4 py-2 hover:bg-gray-100 border-b last:border-b-0"
-                                    >
+                                    <button key={index} type="button" onClick={() => handleSuggestionClick(suggestion)}
+                                        className="w-full text-left px-4 py-2 hover:bg-gray-100 border-b last:border-b-0">
                                         {suggestion}
                                     </button>
                                 ))}
                             </div>
                         )}
-                        
+
+
                         {/* Legenda das famílias */}
                         <div className="mt-2 text-xs text-gray-500">
                             <span className="font-medium">Famílias disponíveis: </span>
@@ -244,7 +191,7 @@ export default function MenuModal({ isOpen, onClose, onSave, menu, rolesList }: 
                                 </span>
                             ))}
                         </div>
-                        
+
                         {/* Lista de ícones filtrados */}
                         {iconSearch.length > 0 && (
                             <div className="mt-3 border rounded-lg p-3 bg-gray-50">
@@ -258,7 +205,7 @@ export default function MenuModal({ isOpen, onClose, onSave, menu, rolesList }: 
                                         </span>
                                     )}
                                 </div>
-                                
+
                                 <div className="grid grid-cols-5 sm:grid-cols-6 gap-2 max-h-40 overflow-y-auto">
                                     {filteredIcons.slice(0, 50).map((iconName) => {
                                         const IconComp = (AllIcons as any)[iconName];
@@ -271,11 +218,10 @@ export default function MenuModal({ isOpen, onClose, onSave, menu, rolesList }: 
                                                     setIconSearch(iconName);
                                                     setShowIconSuggestions(false);
                                                 }}
-                                                className={`flex flex-col items-center justify-center p-2 rounded-lg transition-all ${
-                                                    icon === iconName 
-                                                        ? 'bg-blue-100 border-2 border-blue-400 shadow-inner' 
+                                                className={`flex flex-col items-center justify-center p-2 rounded-lg transition-all ${icon === iconName
+                                                        ? 'bg-blue-100 border-2 border-blue-400 shadow-inner'
                                                         : 'bg-white border border-gray-200 hover:bg-gray-100'
-                                                }`}
+                                                    }`}
                                                 title={iconName}
                                             >
                                                 <IconComp size={18} className={
@@ -288,7 +234,7 @@ export default function MenuModal({ isOpen, onClose, onSave, menu, rolesList }: 
                                         );
                                     })}
                                 </div>
-                                
+
                                 {filteredIcons.length === 0 && (
                                     <div className="text-center py-3 text-gray-500 text-sm">
                                         Nenhum ícone encontrado. Tente digitar o prefixo da família (Fa, Ai, Md, etc.)
@@ -298,42 +244,50 @@ export default function MenuModal({ isOpen, onClose, onSave, menu, rolesList }: 
                         )}
                     </div>
 
+                    {/* Roles */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Roles</label>
-                        <select
-                            multiple
-                            value={selectedRoles.map(String)}
-                            onChange={e => {
-                                const options = Array.from(e.target.selectedOptions);
-                                setSelectedRoles(options.map(o => Number(o.value)));
-                            }}
-                            className="mt-1 block w-full border rounded-lg p-2 focus:ring focus:ring-blue-300"
-                        >
-                            {rolesList.map(role => (
-                                <option key={role.id} value={role.id}>
-                                    {role.name}
-                                </option>
-                            ))}
+                        <select multiple value={selectedRoles.map(String)}
+                            onChange={e => setSelectedRoles(Array.from(e.target.selectedOptions).map(o => Number(o.value)))}
+                            className="mt-1 block w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                            {rolesList.map(role => <option key={role.id} value={role.id}>{role.name}</option>)}
                         </select>
                     </div>
 
+                    {/* Submenus */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Submenus</label>
+                        {submenus.map((s, i) => (
+                            <div key={i} className="flex flex-col gap-1 mt-2 border p-2 rounded">
+                                <div className="flex gap-2">
+                                    <input type="text" placeholder="Nome" value={s.name}
+                                        onChange={e => handleSubmenuChange(i, 'name', e.target.value)}
+                                        className="border rounded p-2 flex-1" />
+                                    <input type="text" placeholder="Path" value={s.path}
+                                        onChange={e => handleSubmenuChange(i, 'path', e.target.value)}
+                                        className="border rounded p-2 flex-1" />
+                                    <button type="button" onClick={() => handleRemoveSubmenu(i)}
+                                        className="bg-red-500 text-white px-2 rounded">X</button>
+                                </div>
+
+                                <div className="mt-1">
+                                    <input type="text" placeholder="Ícone do submenu" value={s.icon || ''}
+                                        onChange={e => handleSubmenuChange(i, 'icon', e.target.value)}
+                                        className="border rounded p-2 w-full"
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                        <button type="button" onClick={handleAddSubmenu} className="mt-2 px-3 py-1 bg-blue-500 text-white rounded">+ Adicionar Submenu</button>
+                    </div>
+
+                    {/* Botões */}
                     <div className="flex justify-end gap-2 mt-4">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                        >
-                            {isEdit ? 'Salvar' : 'Criar'}
-                        </button>
+                        <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">Cancelar</button>
+                        <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">{isEdit ? 'Salvar' : 'Criar'}</button>
                     </div>
                 </form>
             </div>
         </div>
     );
-};
+}
