@@ -133,7 +133,7 @@ export default function MenuModal({ isOpen, onClose, onSave, menu, rolesList }: 
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
             <div className="bg-white rounded-2xl shadow-lg w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto">
                 <div className="flex justify-between items-center border-b pb-3 mb-4">
-                    <h3 className="text-lg font-semibold">{isEdit ? 'Editar Menu' : 'Novo Menu'}</h3>
+                    <h3 className="text-lg font-semibold ">{isEdit ? 'Editar Menu' : 'Novo Menu'}</h3>
                     <button onClick={onClose} className="text-gray-500 hover:text-gray-800"><FaTimes /></button>
                 </div>
 
@@ -278,13 +278,13 @@ export default function MenuModal({ isOpen, onClose, onSave, menu, rolesList }: 
                                 </div>
                             </div>
                         ))}
-                        <button type="button" onClick={handleAddSubmenu} className="mt-2 px-3 py-1 bg-blue-500 text-white rounded">+ Adicionar Submenu</button>
+                        <button type="button" onClick={handleAddSubmenu} className="mt-2 px-3 py-1 bg-blue-500 text-white rounded cursor-pointer">+ Adicionar Submenu</button>
                     </div>
 
                     {/* Botões */}
                     <div className="flex justify-end gap-2 mt-4">
-                        <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">Cancelar</button>
-                        <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">{isEdit ? 'Salvar' : 'Criar'}</button>
+                        <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 cursor-pointer">Cancelar</button>
+                        <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer">{isEdit ? 'Salvar' : 'Criar'}</button>
                     </div>
                 </form>
             </div>

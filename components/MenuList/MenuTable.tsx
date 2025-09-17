@@ -74,7 +74,7 @@ export default function MenuTable({ menusList, rolesList }: MenuTableProps) {
                         setSelectedMenu(null);
                         setModalOpen(true);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 cursor-pointer"
                 >
                     <FaPlus /> Novo Menu
                 </button>
