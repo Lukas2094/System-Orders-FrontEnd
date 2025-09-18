@@ -3,7 +3,12 @@
 import React, { useEffect, useState } from 'react';
 import { FaBars, FaEdit, FaPlus, FaTrash } from "react-icons/fa";
 import { Menu } from '@/types/menus';
-import MenuModal from './MenuModal';
+import dynamic from "next/dynamic";
+
+const MenuModal = dynamic(() => import("./MenuModal"), {
+  ssr: false, // não renderiza no servidor
+  loading: () => <p>Carregando modal...</p>, // placeholder opcional
+});
 import { api } from '@/utils/api';
 import { io } from "socket.io-client"; // ✅
 import { useToast } from '../Toast/Toast';

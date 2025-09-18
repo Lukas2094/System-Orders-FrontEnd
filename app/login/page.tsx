@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { api } from "@/utils/api";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -10,10 +11,11 @@ export default function LoginPage() {
     const router = useRouter();
 
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            const token = localStorage.getItem("token") || document.cookie.includes("token=");
-            if (token) router.push("/");
+    if (typeof window !== "undefined") {
+        if (document.cookie.includes("token=")) {
+        router.push("/");
         }
+    }
     }, [router]);
 
     // const handleLogin = async (e: React.FormEvent) => {
@@ -46,27 +48,33 @@ export default function LoginPage() {
     // };
 
     const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
+    e.preventDefault();
 
-        try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-            method: "POST",
+    try {
+        const res = await api.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
+        { email, password },
+        {
             headers: { "Content-Type": "application/json" },
-            credentials: "include", 
-            body: JSON.stringify({ email, password }),
-        });
+            withCredentials: true, 
+        }
+        );
 
-        if (res.ok) {
-            setMessage("Redirecionando...");
-            window.location.href = "/";
-        } else {
-            const data = await res.json();
-            throw new Error(data.message || "Login falhou");
-        }
-        } catch (error) {
-        setMessage((error as Error).message);
-        }
+   
+        const { access_token } = res.data;
+
+
+        document.cookie = `token=${access_token}; path=/; max-age=3600; Secure; SameSite=Strict`;
+
+        setMessage("Redirecionando...");
+        router.push("/");
+    } catch (error: any) {
+        setMessage(
+        error.response?.data?.message || "Login falhou. Verifique suas credenciais."
+        );
+    }
     };
+
   
     return (
         <div className="flex justify-center items-center h-screen">
