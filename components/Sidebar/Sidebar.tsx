@@ -115,8 +115,11 @@ export default function Sidebar() {
       });
       if (response.ok) {
         localStorage.removeItem("token");
-        router.push("/login");
+        setTimeout(() => {
+        router.push("/login"); 
         router.refresh();
+        }, 200);
+       
       }
     } catch (error) {
       console.error("Erro ao fazer logout:", error);

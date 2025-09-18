@@ -31,6 +31,7 @@ async function fetchMenusByRole(roleId: number): Promise<MenuItem[]> {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/menus/role/${roleId}`, {
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       cache: "no-store"
     });
 
@@ -50,7 +51,7 @@ async function fetchMenusByRole(roleId: number): Promise<MenuItem[]> {
 }
 
 export async function middleware(req: NextRequest) {
-  const token = req.cookies.get("token")?.value;
+  const token = req.cookies.get("token")?.value || "";
   const { pathname } = req.nextUrl;
 
   const publicPaths = ["/login", "/register", "/reset-password", "/404"];
@@ -72,6 +73,11 @@ export async function middleware(req: NextRequest) {
   }
 
   if (token && !publicPaths.includes(pathname)) {
+
+    if (token.trim() === "") {
+     return NextResponse.redirect(new URL("/login", req.url));
+    }
+
     try {
       const decoded: TokenPayload = jwtDecode(token);
 
