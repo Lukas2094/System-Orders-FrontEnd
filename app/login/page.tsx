@@ -29,18 +29,15 @@ export default function LoginPage() {
 
             const data = await res.json();
 
-            // if (res.ok) {
-            //     if (typeof window !== "undefined") {
-            //         localStorage.setItem("token", data.access_token);
-            //     }
-            //     setMessage("Redirecionando...");
-            //     window.location.href = "/";
-            if (res.ok) {
-                localStorage.setItem("user", JSON.stringify(data.user));
+           if (res.ok) {
+                // if (typeof window !== "undefined") {
+                //     localStorage.setItem("token", data.access_token);
+                // }
+                document.cookie = `token=${data.access_token}; path=/; max-age=3600`;
+
                 setMessage("Redirecionando...");
                 window.location.href = "/";
-            }
-             else {
+            } else {
                 throw new Error(data.message || "Login falhou");
             }
         } catch (error) {

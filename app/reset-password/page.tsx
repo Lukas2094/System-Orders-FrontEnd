@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 export default function ForgotPasswordPage() {
@@ -40,7 +41,7 @@ export default function ForgotPasswordPage() {
                 </button>
 
                 <div className="text-center mt-4 text-sm">
-                    <a href="/login" className="text-blue-500 hover:underline">Voltar ao login</a>
+                    <Link href="/login" className="text-blue-500 hover:underline">Voltar ao login</Link>
                 </div>
             </form>
         </div>
