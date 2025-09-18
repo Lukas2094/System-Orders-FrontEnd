@@ -29,7 +29,7 @@ async function fetchMenusByRole(roleId: number): Promise<MenuItem[]> {
   }
 
   try {
-    const response = await fetch(`http://localhost:3000/menus/role/${roleId}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/menus/role/${roleId}`, {
       headers: { "Content-Type": "application/json" },
       cache: "no-store"
     });

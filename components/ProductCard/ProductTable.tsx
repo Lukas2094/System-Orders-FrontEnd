@@ -54,13 +54,13 @@ export default function ProductTable({ products, pageSize = 5 }: ProductTablePro
 
   const handleSave = async (product: any) => {
     if (editingProduct) {
-      await fetch(`http://localhost:3000/products/${editingProduct.id}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${editingProduct.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(product),
       });
     } else {
-      await fetch("http://localhost:3000/products", {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(product),
@@ -74,7 +74,7 @@ export default function ProductTable({ products, pageSize = 5 }: ProductTablePro
 
   const handleDelete = async (id: number) => {
     if (confirm("Tem certeza que deseja excluir este produto?")) {
-      await fetch(`http://localhost:3000/products/${id}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`, {
         method: "DELETE",
       });
       router.refresh();
