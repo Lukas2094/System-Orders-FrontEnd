@@ -115,9 +115,8 @@ export default function Sidebar() {
       });
       if (response.ok) {
         localStorage.removeItem("token");
-        // router.push("/login");
-        window.location.href = "/login";
-        // router.refresh();
+        router.push("/login");
+        router.refresh();
       }
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
