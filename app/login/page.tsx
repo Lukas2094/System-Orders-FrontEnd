@@ -58,7 +58,7 @@ export default function LoginPage() {
 
         if (res.ok) {
             setMessage("Redirecionando...");
-            router.push("/"); 
+            window.location.href = "/";
         } else {
             const data = await res.json();
             throw new Error(data.message || "Login falhou");
