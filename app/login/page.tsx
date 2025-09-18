@@ -29,13 +29,18 @@ export default function LoginPage() {
 
             const data = await res.json();
 
+            // if (res.ok) {
+            //     if (typeof window !== "undefined") {
+            //         localStorage.setItem("token", data.access_token);
+            //     }
+            //     setMessage("Redirecionando...");
+            //     window.location.href = "/";
             if (res.ok) {
-                if (typeof window !== "undefined") {
-                    localStorage.setItem("token", data.access_token);
-                }
+                localStorage.setItem("user", JSON.stringify(data.user));
                 setMessage("Redirecionando...");
                 window.location.href = "/";
-            } else {
+            }
+             else {
                 throw new Error(data.message || "Login falhou");
             }
         } catch (error) {
