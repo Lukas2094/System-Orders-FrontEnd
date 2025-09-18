@@ -63,11 +63,14 @@ export default function LoginPage() {
    
         const { access_token } = res.data;
 
+        if (access_token) {
 
         document.cookie = `token=${access_token}; path=/; max-age=3600; Secure; SameSite=Strict`;
 
         setMessage("Redirecionando...");
-        router.push("/");
+        window.location.href = "/";
+        }
+
     } catch (error: any) {
         setMessage(
         error.response?.data?.message || "Login falhou. Verifique suas credenciais."
