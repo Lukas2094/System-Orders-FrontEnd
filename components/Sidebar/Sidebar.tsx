@@ -10,7 +10,9 @@ import { useRole } from "@/utils/RoleContext";
 import io from "socket.io-client";
 import { api } from "@/utils/api";
 
-const socket = io(api.defaults.baseURL);
+const socket = io(api.defaults.baseURL , {
+  transports: ["websocket"],
+});
 
 export default function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);

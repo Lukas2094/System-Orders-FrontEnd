@@ -11,7 +11,9 @@ export default function OrdersClient({ initialOrders }: { initialOrders: Order[]
     const [orders, setOrders] = useState<Order[]>(initialOrders);
 
     useEffect(() => {
-        socket = io(`${process.env.NEXT_PUBLIC_API_URL}`);
+        socket = io(`${process.env.NEXT_PUBLIC_API_URL}` , {
+            transports: ['websocket'],
+        });
 
         socket.on('ordersUpdated', (order: Order) => {
             setOrders(prev => {
