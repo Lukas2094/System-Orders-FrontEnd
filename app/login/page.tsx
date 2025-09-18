@@ -16,35 +16,58 @@ export default function LoginPage() {
         }
     }, [router]);
 
+    // const handleLogin = async (e: React.FormEvent) => {
+    //     e.preventDefault();
+
+    //     try {
+    //         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+    //             method: "POST",
+    //             headers: { "Content-Type": "application/json" },
+    //             credentials: "include",
+    //             body: JSON.stringify({ email, password }),
+    //         });
+
+    //         const data = await res.json();
+
+    //        if (res.ok) {
+    //             if (typeof window !== "undefined") {
+    //                 localStorage.setItem("token", data.access_token);
+    //             }
+    //             document.cookie = `token=${data.access_token}; path=/; max-age=3600`;
+
+    //             setMessage("Redirecionando...");
+    //             window.location.href = "/";
+    //         } else {
+    //             throw new Error(data.message || "Login falhou");
+    //         }
+    //     } catch (error) {
+    //         setMessage((error as Error).message);
+    //     }
+    // };
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({ email, password }),
-            });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include", 
+            body: JSON.stringify({ email, password }),
+        });
 
+        if (res.ok) {
+            setMessage("Redirecionando...");
+            router.push("/"); 
+        } else {
             const data = await res.json();
-
-           if (res.ok) {
-                if (typeof window !== "undefined") {
-                    localStorage.setItem("token", data.access_token);
-                }
-                document.cookie = `token=${data.access_token}; path=/; max-age=3600`;
-
-                setMessage("Redirecionando...");
-                window.location.href = "/";
-            } else {
-                throw new Error(data.message || "Login falhou");
-            }
+            throw new Error(data.message || "Login falhou");
+        }
         } catch (error) {
-            setMessage((error as Error).message);
+        setMessage((error as Error).message);
         }
     };
-
+  
     return (
         <div className="flex justify-center items-center h-screen">
             <div className="bg-white/90 backdrop-blur-lg p-10 rounded-2xl shadow-2xl w-full max-w-md">
