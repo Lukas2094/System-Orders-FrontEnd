@@ -33,8 +33,6 @@ export default function LoginPage() {
                 if (typeof window !== "undefined") {
                     localStorage.setItem("token", data.access_token);
                 }
-                document.cookie = `token=${data.access_token}; path=/; max-age=3600`;
-
                 setMessage("Redirecionando...");
                 window.location.href = "/";
             } else {
