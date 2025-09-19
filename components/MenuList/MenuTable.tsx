@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 
 const MenuModal = dynamic(() => import("./MenuModal"), {
   ssr: false, // não renderiza no servidor
-  loading: () => <p>Carregando modal...</p>, // placeholder opcional
+  loading: () => <p></p>,
 });
 import { api } from '@/utils/api';
 import { io } from "socket.io-client"; // ✅
