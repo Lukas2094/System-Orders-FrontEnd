@@ -109,16 +109,24 @@ export default function Sidebar() {
 
   const handleLogout = async () => {
     try {
+      // Chama a API para invalidar o token no backend
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
         method: "POST",
         credentials: "include",
       });
+
       if (response.ok) {
+        // Remove token do localStorage
         localStorage.removeItem("token");
+
+        // Remove o cookie
+        document.cookie = `token=; path=/; max-age=0; Secure; SameSite=Strict`;
+
+        // Redireciona para login
         setTimeout(() => {
-        router.push("/login"); 
-        router.refresh();
-        }, 200);
+          router.push("/login");
+          router.refresh();
+        }, 500);
        
       }
     } catch (error) {
