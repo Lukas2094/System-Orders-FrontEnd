@@ -18,65 +18,65 @@ export default function LoginPage() {
     }
     }, [router]);
 
-    // const handleLogin = async (e: React.FormEvent) => {
-    //     e.preventDefault();
-
-    //     try {
-    //         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-    //             method: "POST",
-    //             headers: { "Content-Type": "application/json" },
-    //             credentials: "include",
-    //             body: JSON.stringify({ email, password }),
-    //         });
-
-    //         const data = await res.json();
-
-    //        if (res.ok) {
-    //             if (typeof window !== "undefined") {
-    //                 localStorage.setItem("token", data.access_token);
-    //             }
-    //             document.cookie = `token=${data.access_token}; path=/; max-age=3600`;
-
-    //             setMessage("Redirecionando...");
-    //             window.location.href = "/";
-    //         } else {
-    //             throw new Error(data.message || "Login falhou");
-    //         }
-    //     } catch (error) {
-    //         setMessage((error as Error).message);
-    //     }
-    // };
-
     const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+        e.preventDefault();
 
-    try {
-        const res = await api.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-        { email, password },
-        {
-            headers: { "Content-Type": "application/json" },
-            withCredentials: true, 
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await res.json();
+
+           if (res.ok) {
+                if (typeof window !== "undefined") {
+                    localStorage.setItem("token", data.access_token);
+                }
+                document.cookie = `token=${data.access_token}; path=/; max-age=3600`;
+
+                setMessage("Redirecionando...");
+                window.location.href = "/";
+            } else {
+                throw new Error(data.message || "Login falhou");
+            }
+        } catch (error) {
+            setMessage((error as Error).message);
         }
-        );
+    };
+
+    // const handleLogin = async (e: React.FormEvent) => {
+    // e.preventDefault();
+
+    // try {
+    //     const res = await api.post(
+    //     `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
+    //     { email, password },
+    //     {
+    //         headers: { "Content-Type": "application/json" },
+    //         withCredentials: true, 
+    //     }
+    //     );
 
    
-        const { access_token } = res.data;
+    //     const { access_token } = res.data;
 
-        if (access_token) {
+    //     if (access_token) {
 
-        document.cookie = `token=${access_token}; path=/; max-age=3600; Secure; SameSite=Strict`;
+    //     document.cookie = `token=${access_token}; path=/; max-age=3600; Secure; SameSite=Strict`;
 
-        setMessage("Redirecionando...");
-        window.location.href = "/";
-        }
+    //     setMessage("Redirecionando...");
+    //     window.location.href = "/";
+    //     }
 
-    } catch (error: any) {
-        setMessage(
-        error.response?.data?.message || "Login falhou. Verifique suas credenciais."
-        );
-    }
-    };
+    // } catch (error: any) {
+    //     setMessage(
+    //     error.response?.data?.message || "Login falhou. Verifique suas credenciais."
+    //     );
+    // }
+    // };
 
   
     return (
