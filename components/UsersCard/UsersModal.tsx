@@ -91,7 +91,7 @@ export default function UserModal({
   };
 
   useEffect(() => {
-    const socket = io(api.defaults.baseURL , {
+    const socket = io(process.env.NEXT_PUBLIC_API_URL , {
       transports: ["websocket"],
     });
 

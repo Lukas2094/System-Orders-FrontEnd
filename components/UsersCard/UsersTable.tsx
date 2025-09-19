@@ -13,9 +13,9 @@ type UserTableProps = {
     loggedUser?: any;
 };
 
-const socket = io(api.defaults.baseURL, {
+    const socket = io(process.env.NEXT_PUBLIC_API_URL , {
     transports: ["websocket"],
-});
+    });
 
 export default function UsersTable({ users, roles, loggedUser }: UserTableProps) {
     const [userList, setUserList] = useState(users);

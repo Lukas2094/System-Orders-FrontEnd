@@ -30,8 +30,8 @@ export default function MenuTable({ menusList, rolesList }: MenuTableProps) {
     const { showToast, showConfirm } = useToast();
 
     useEffect(() => {
-        const socket = io(api.defaults.baseURL!, {
-            transports: ["websocket"],
+       const socket = io(process.env.NEXT_PUBLIC_API_URL! , {
+        transports: ["websocket"],
         });
 
         socket.on("menuCreated", (menu: Menu) => {

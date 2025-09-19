@@ -10,7 +10,7 @@ import { useRole } from "@/utils/RoleContext";
 import io from "socket.io-client";
 import { api } from "@/utils/api";
 
-const socket = io(api.defaults.baseURL , {
+const socket = io(process.env.NEXT_PUBLIC_API_URL , {
   transports: ["websocket"],
 });
 
