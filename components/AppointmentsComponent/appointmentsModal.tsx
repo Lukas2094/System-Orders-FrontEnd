@@ -40,8 +40,6 @@ export default function AppointmentModal({
         e.preventDefault();
         const token = localStorage.getItem("token") || Cookies.get("token");
         const decoded: any = token ? jwtDecode(token) : {};
-
-        console.log(decoded.sub, 'decoded');
         
         try {
             const method = appointment ? "PUT" : "POST";
