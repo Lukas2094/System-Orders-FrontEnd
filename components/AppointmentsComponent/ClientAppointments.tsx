@@ -6,17 +6,14 @@ import { api } from "@/utils/api";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { FaPlus } from "react-icons/fa";
 import { io } from "socket.io-client";
+import { useToast } from '../Toast/Toast';
+import { s } from "framer-motion/client";
 
-const socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000");
-
-export default function ClientAppointments({
-    initialAppointments,
-}: {
-    initialAppointments: any[];
-}) {
+export default function ClientAppointments({ initialAppointments} : any) {
     const [appointments, setAppointments] = useState(initialAppointments);
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState<any | null>(null);
+    const { showToast } = useToast();
 
     const STATUS_COLORS: Record<string, string> = {
         pendente: "bg-yellow-400",
@@ -26,36 +23,42 @@ export default function ClientAppointments({
     };
 
     useEffect(() => {
-        // 🔥 Conecta ao WebSocket e escuta os eventos
-        socket.on("appointmentCreated", (appt) => {
-            setAppointments((prev) => [...prev, appt]);
+        const socket = io(process.env.NEXT_PUBLIC_API_URL!, {
+            transports: ["websocket"],
         });
 
-        socket.on("appointmentUpdated", (appt) => {
-            setAppointments((prev) =>
-                prev.map((a) => (a.id === appt.id ? appt : a))
+        // 🔥 Quando cria um agendamento
+        socket.on("appointmentCreated", (appointment) => {
+            setAppointments((prev: any) => [...prev, appointment]);
+        });
+
+        // 🔥 Quando atualiza um agendamento
+        socket.on("appointmentUpdated", (appointment) => {
+            setAppointments((prev:any) =>
+                prev.map((a: any) => (a.id === appointment.id ? appointment : a))
             );
         });
 
+        // 🔥 Quando deleta um agendamento
         socket.on("appointmentDeleted", (id) => {
-            setAppointments((prev) => prev.filter((a) => a.id !== id));
+            // console.log("⚡ Evento recebido do backend:", id);
+            setAppointments((prev: any[]) => prev.filter((a) => a.id !== id));
         });
-
         return () => {
-            socket.off("appointmentCreated");
-            socket.off("appointmentUpdated");
-            socket.off("appointmentDeleted");
+            socket.disconnect();
         };
     }, []);
 
     const handleDelete = async (id: number) => {
-        if (!confirm("Deseja realmente excluir este agendamento?")) return;
+        if (!confirm("Tem certeza que deseja excluir este agendamento?")) return;
 
         try {
             await api.delete(`/appointments/${id}`);
-            // Não precisa mexer no state aqui, o WebSocket já vai remover
+            setAppointments((prev: any[]) => prev.filter((a) => a.id !== id));
+            showToast("Agendamento excluído com sucesso!", "success");
         } catch (error) {
             console.error("Erro ao excluir:", error);
+            showToast("Erro ao excluir agendamento.", "error");
         }
     };
 
@@ -88,7 +91,7 @@ export default function ClientAppointments({
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {appointments.map((appt) => (
+                        {appointments.map((appt : any) => (
                             <tr key={appt.id} className="hover:bg-gray-50">
                                 <td className="px-4 py-3 text-center">{appt.id}</td>
                                 <td className="px-4 py-3 text-center">
@@ -108,14 +111,14 @@ export default function ClientAppointments({
                                             setSelected(appt);
                                             setOpen(true);
                                         }}
-                                        className="flex items-center justify-center w-8 h-8 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition"
+                                        className="flex items-center justify-center w-8 h-8 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition cursor-pointer"
                                         title="Editar"
                                     >
                                         <FiEdit size={16} />
                                     </button>
                                     <button
                                         onClick={() => handleDelete(appt.id)}
-                                        className="flex items-center justify-center w-8 h-8 bg-red-500 text-white rounded-full hover:bg-red-600 transition"
+                                        className="flex items-center justify-center w-8 h-8 bg-red-500 text-white rounded-full hover:bg-red-600 transition cursor-pointer"
                                         title="Excluir"
                                     >
                                         <FiTrash2 size={16} />

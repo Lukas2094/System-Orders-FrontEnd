@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useToast } from "../Toast/Toast";
+import { jwtDecode } from "jwt-decode";
+import Cookies from "js-cookie"; // Importing Cookies
 
 interface AppointmentModalProps {
     open: boolean;
@@ -18,7 +21,7 @@ export default function AppointmentModal({
     const [date, setDate] = useState("");
     const [notes, setNotes] = useState("");
     const [status, setStatus] = useState(STATUS_OPTIONS[0]);
-
+    const { showToast } = useToast();
     useEffect(() => {
         if (appointment) {
             setDate(appointment.scheduled_date?.slice(0, 16) || "");
@@ -35,30 +38,45 @@ export default function AppointmentModal({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const token = localStorage.getItem("token") || Cookies.get("token");
+        const decoded: any = token ? jwtDecode(token) : {};
 
-        const method = appointment ? "PUT" : "POST";
-        const url = appointment
-            ? `${process.env.NEXT_PUBLIC_API_URL}/appointments/${appointment.id}`
-            : `${process.env.NEXT_PUBLIC_API_URL}/appointments`;
+        console.log(decoded.sub, 'decoded');
+        
+        try {
+            const method = appointment ? "PUT" : "POST";
+            const url = appointment
+                ? `${process.env.NEXT_PUBLIC_API_URL}/appointments/${appointment.id}`
+                : `${process.env.NEXT_PUBLIC_API_URL}/appointments`;
 
-        const res = await fetch(url, {
-            method,
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: JSON.stringify({
-                scheduled_date: date,
-                notes,
-                status,
-                user_id: appointment?.user_id || 1,
-            }),
-        });
+            const res = await fetch(url, {
+                method,
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({
+                    scheduled_date: date,
+                    notes,
+                    status,
+                    user_id: decoded.sub || 1,
+                }),
+            });
 
-        if (res.ok) {
-            onClose();
-        } else {
-            alert("Erro ao salvar agendamento");
+            if (res.ok) {
+                showToast(
+                    appointment
+                        ? "Agendamento atualizado com sucesso!"
+                        : "Agendamento criado com sucesso!",
+                    "success"
+                );
+                onClose();
+            } else {
+                showToast("Erro ao salvar agendamento.", "error");
+            }
+        } catch (error) {
+            console.error("Erro no envio:", error);
+            showToast("Erro de conexão com o servidor.", "error");
         }
     };
 
