@@ -5,28 +5,30 @@ import DynamicMetadata from "@/components/SEO/Metadata";
 async function getDashboardData() {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
-  const [ordersRes, productsRes, usersRes] = await Promise.all([
+  const [ordersRes, productsRes, usersRes , appointmentsRes] = await Promise.all([
     fetch(`${baseUrl}/orders`, { cache: "no-store" }),
     fetch(`${baseUrl}/products`, { cache: "no-store" }),
     fetch(`${baseUrl}/users`, { cache: "no-store" }),
+    fetch(`${baseUrl}/appointments`, { cache: "no-store" }),
   ]);
 
-  const [orders, products, users] = await Promise.all([
+  const [orders, products, users , appointments] = await Promise.all([
     ordersRes.json(),
     productsRes.json(),
     usersRes.json(),
+    appointmentsRes.json(),
   ]);
 
   return {
     orders: orders.length || 0,
     products: products.length || 0,
     users: users.length || 0,
-    reports: 12, // pode ser calculado depois via rota no Nest
+    appointments: appointments.length || 0, 
   };
 }
 
 export default async function HomePage() {
-  const { orders, products, users, reports } = await getDashboardData();
+  const { orders, products, users, appointments } = await getDashboardData();
 
   return (
     <>
@@ -76,8 +78,8 @@ export default async function HomePage() {
             <div className="bg-white shadow-md rounded-2xl p-6 flex items-center gap-4 hover:shadow-lg transition">
               <FaChartBar className="text-orange-600 text-3xl" />
               <div>
-                <p className="text-gray-500">Relatórios</p>
-                <h3 className="text-xl font-bold">{reports}</h3>
+                <p className="text-gray-500">Agendamentos</p>
+                <h3 className="text-xl font-bold">{appointments}</h3>
               </div>
             </div>
           </div>
