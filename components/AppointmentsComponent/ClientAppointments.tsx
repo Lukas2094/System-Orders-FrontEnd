@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AppointmentModal from "./appointmentsModal";
 import { api } from "@/utils/api";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { FaPlus } from "react-icons/fa";
+import { io } from "socket.io-client";
+
+const socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000");
 
 export default function ClientAppointments({
     initialAppointments,
@@ -19,25 +22,38 @@ export default function ClientAppointments({
         pendente: "bg-yellow-400",
         confirmado: "bg-green-500",
         cancelado: "bg-red-500",
+        concluido: "bg-blue-500",
     };
 
-    const reloadAppointments = async () => {
-        try {
-            const res = await api.get("/appointments", {
-                headers: { 'Cache-Control': 'no-store' }
-            });
-            setAppointments(res.data);
-        } catch (error) {
-            console.error("Erro ao carregar appointments:", error);
-        }
-    };
+    useEffect(() => {
+        // 🔥 Conecta ao WebSocket e escuta os eventos
+        socket.on("appointmentCreated", (appt) => {
+            setAppointments((prev) => [...prev, appt]);
+        });
+
+        socket.on("appointmentUpdated", (appt) => {
+            setAppointments((prev) =>
+                prev.map((a) => (a.id === appt.id ? appt : a))
+            );
+        });
+
+        socket.on("appointmentDeleted", (id) => {
+            setAppointments((prev) => prev.filter((a) => a.id !== id));
+        });
+
+        return () => {
+            socket.off("appointmentCreated");
+            socket.off("appointmentUpdated");
+            socket.off("appointmentDeleted");
+        };
+    }, []);
 
     const handleDelete = async (id: number) => {
         if (!confirm("Deseja realmente excluir este agendamento?")) return;
 
         try {
             await api.delete(`/appointments/${id}`);
-            setAppointments(appointments.filter(a => a.id !== id));
+            // Não precisa mexer no state aqui, o WebSocket já vai remover
         } catch (error) {
             console.error("Erro ao excluir:", error);
         }
@@ -80,7 +96,8 @@ export default function ClientAppointments({
                                 </td>
                                 <td className="px-4 py-3 text-center flex items-center justify-center gap-2 mx-auto">
                                     <span
-                                        className={`w-3 h-3 rounded-full ${STATUS_COLORS[appt.status] || "bg-gray-400"}`}
+                                        className={`w-3 h-3 rounded-full ${STATUS_COLORS[appt.status] || "bg-gray-400"
+                                            }`}
                                     />
                                     <span className="capitalize">{appt.status}</span>
                                 </td>
@@ -114,9 +131,7 @@ export default function ClientAppointments({
                 open={open}
                 onClose={() => setOpen(false)}
                 appointment={selected || undefined}
-                onSaved={reloadAppointments}
             />
         </div>
-
     );
 }

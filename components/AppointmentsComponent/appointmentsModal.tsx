@@ -5,17 +5,15 @@ import { useState, useEffect } from "react";
 interface AppointmentModalProps {
     open: boolean;
     onClose: () => void;
-    appointment?: any; // se vier preenchido, é edição
-    onSaved: () => void; // callback para recarregar a lista
+    appointment?: any; 
 }
 
-const STATUS_OPTIONS = ["pendente", "confirmado", "cancelado" , "concluido"];
+const STATUS_OPTIONS = ["pendente", "confirmado", "cancelado", "completado"];
 
 export default function AppointmentModal({
     open,
     onClose,
     appointment,
-    onSaved,
 }: AppointmentModalProps) {
     const [date, setDate] = useState("");
     const [notes, setNotes] = useState("");
@@ -52,13 +50,12 @@ export default function AppointmentModal({
             body: JSON.stringify({
                 scheduled_date: date,
                 notes,
-                status, // adiciona o status
-                user_id: appointment?.user_id || 1, // ⚠️ ajustar para pegar usuário logado
+                status,
+                user_id: appointment?.user_id || 1,
             }),
         });
 
         if (res.ok) {
-            onSaved();
             onClose();
         } else {
             alert("Erro ao salvar agendamento");
