@@ -74,7 +74,6 @@ export default function ClientAppointments({ initialAppointments }: any) {
   const handleEventDragStop = async (info: any) => {
     const trashEl = document.getElementById("trash");
     const trashRect = trashEl?.getBoundingClientRect();
-
     if (!trashRect) return;
 
     const x = info.jsEvent.clientX;
@@ -94,7 +93,12 @@ export default function ClientAppointments({ initialAppointments }: any) {
 
       try {
         await api.delete(`/appointments/${info.event.id}`);
-        setAppointments((prev: any[]) => prev.filter((a) => a.id !== info.event.id));
+
+        // 🔥 Atualiza localmente também (feedback imediato)
+        setAppointments((prev: any[]) =>
+          prev.filter((a) => a.id !== info.event.id)
+        );
+
         showToast("Agendamento excluído com sucesso!", "success");
       } catch (err) {
         console.error(err);
@@ -103,6 +107,7 @@ export default function ClientAppointments({ initialAppointments }: any) {
       }
     }
   };
+
 
   return (
     <div className="relative bg-white rounded-2xl shadow-md p-6">
