@@ -1,7 +1,7 @@
 import DynamicMetadata from "@/components/SEO/Metadata";
 import { api } from "@/utils/api";
 import { cookies } from "next/headers";
-import ClientAppointments from "@/components/AppointmentsComponent/ClientAppointments";
+import ClientAppointments from "@/components/AppointmentsList/ClientAppointments";
 
 export default async function AppointmentsPage() {
     const cookieStore = await cookies();
