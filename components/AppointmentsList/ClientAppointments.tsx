@@ -94,6 +94,7 @@ export default function ClientAppointments({ initialAppointments }: any) {
 
       try {
         await api.delete(`/appointments/${info.event.id}`);
+        setAppointments((prev: any[]) => prev.filter((a) => a.id !== info.event.id));
         showToast("Agendamento excluído com sucesso!", "success");
       } catch (err) {
         console.error(err);
