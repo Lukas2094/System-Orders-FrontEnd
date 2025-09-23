@@ -118,64 +118,17 @@ export default function ClientAppointments({ initialAppointments }: any) {
         initialView="dayGridMonth"
         editable={true}
         droppable={true}
-        events={appointments.map((a: any) => ({
-          id: a.id.toString(),
-          title: a.user?.name || "Usuário",
-          extendedProps: {
-            status: a.status,
-            date: new Date(a.scheduled_date).toLocaleDateString("pt-BR"),
-            time: new Date(a.scheduled_date).toLocaleTimeString("pt-BR", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          },
-          start: a.scheduled_date,
-          backgroundColor:
-            a.status === "pendente"
-              ? "#facc15"
-              : a.status === "confirmado"
-              ? "#22c55e"
-              : a.status === "cancelado"
-              ? "#ef4444"
-              : "#3b82f6",
-        }))}
-        eventContent={(arg) => {
-          const { status, date, time } = arg.event.extendedProps as any;
-
-          const STATUS_COLORS: Record<string, string> = {
-            pendente: "#facc15",
-            confirmado: "#22c55e",
-            cancelado: "#ef4444",
-            completado: "#3b82f6",
-          };
-
-          return (
-            <div className="flex flex-col text-xs p-1 leading-tight">
-              <span className="font-semibold text-[13px]">
-                {arg.event.title}
-              </span>
-              <span className="flex items-center gap-1 text-[12px] text-gray-700 capitalize">
-                <span
-                  className="w-2 h-2 rounded-full inline-block"
-                  style={{ backgroundColor: STATUS_COLORS[status] || "#ccc" }}
-                />
-                {status}
-              </span>
-              <span className="text-[12px] text-gray-500">
-                {date} {time}
-              </span>
-            </div>
-          );
-        }}
-        dateClick={(info) => {
+        selectable={true} // 🔥 habilita seleção de dias
+        select={(info) => {
+          // só abre se não tiver evento nesse dia
           const hasEvent = appointments.some(
             (a: any) =>
               new Date(a.scheduled_date).toDateString() ===
-              info.date.toDateString()
+              new Date(info.start).toDateString()
           );
 
           if (!hasEvent) {
-            setSelected({ scheduled_date: info.dateStr });
+            setSelected({ scheduled_date: info.startStr });
             setOpen(true);
           }
         }}
@@ -190,6 +143,7 @@ export default function ClientAppointments({ initialAppointments }: any) {
         eventDragStop={handleEventDragStop}
         height="80vh"
       />
+
 
       {/* 🔴 Lixeira fixa */}
       <div
