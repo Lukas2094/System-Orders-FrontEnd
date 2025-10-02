@@ -19,6 +19,7 @@ interface Category {
 
 export default function ProductModal({ isOpen, onClose, onSave, initialData }: ProductModalProps) {
     const [form, setForm] = useState({
+        isbn: "",
         name: "",
         price: "",
         categoryId: "",
@@ -44,6 +45,7 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
     useEffect(() => {
         if (initialData) {
             setForm({
+                isbn: initialData.isbn ?? "",
                 name: initialData.name ?? "",
                 price: initialData.price ?? "",
                 categoryId: initialData.categoryId ?? "",
@@ -56,6 +58,7 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
             }
         } else {
             setForm({
+                isbn: "",
                 name: "",
                 price: "",
                 categoryId: "",
@@ -88,33 +91,59 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
                 </h2>
 
                 <div className="space-y-4">
-                    {/* Nome */}
-                    <div className="flex flex-col">
-                        <label className="text-sm font-medium text-gray-700 mb-1">Nome</label>
-                        <input
-                            name="name"
-                            value={form.name ?? ""}
-                            onChange={handleChange}
-                            placeholder="Digite o nome do produto"
-                            className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
+                    <div className="grid grid-cols-2 gap-4">
+                        {/* ISBN */}
+                        <div className="flex flex-col">
+                            <label className="text-sm font-medium text-gray-700 mb-1">ISBN</label>
+                            <input
+                                name="isbn"
+                                value={form.isbn ?? ""}
+                                onChange={handleChange}
+                                placeholder="Digite ou scanneie o ISBN"
+                                className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                        </div>
+
+                        {/* Nome */}
+                        <div className="flex flex-col">
+                            <label className="text-sm font-medium text-gray-700 mb-1">Nome</label>
+                            <input
+                                name="name"
+                                value={form.name ?? ""}
+                                onChange={handleChange}
+                                placeholder="Digite o nome do produto"
+                                className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                        </div>
+
+                        {/* Preço */}
+                        <div className="flex flex-col">
+                            <label className="text-sm font-medium text-gray-700 mb-1">Preço</label>
+                            <input
+                                name="price"
+                                value={form.price ?? ""}
+                                onChange={handleChange}
+                                placeholder="0.00"
+                                type="number"
+                                step="0.01"
+                                className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                        </div>
+
+                        {/* Estoque */}
+                        <div className="flex flex-col">
+                            <label className="text-sm font-medium text-gray-700 mb-1">Estoque</label>
+                            <input
+                                name="stock"
+                                value={form.stock ?? 0}
+                                onChange={handleChange}
+                                type="number"
+                                className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                        </div>
                     </div>
 
-                    {/* Preço */}
-                    <div className="flex flex-col">
-                        <label className="text-sm font-medium text-gray-700 mb-1">Preço</label>
-                        <input
-                            name="price"
-                            value={form.price ?? ""}
-                            onChange={handleChange}
-                            placeholder="0.00"
-                            type="number"
-                            step="0.01"
-                            className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                    </div>
-
-                    {/* Categoria e Subcategoria */}
+                    {/* Categoria (full width) */}
                     <div className="flex flex-col">
                         <label className="text-sm font-medium text-gray-700 mb-1">Categoria</label>
                         <select
@@ -124,12 +153,15 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
                             className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         >
                             <option value="">Selecione a Categoria</option>
-                            {categories.map(cat => (
-                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                            {categories.map((cat) => (
+                                <option key={cat.id} value={cat.id}>
+                                    {cat.name}
+                                </option>
                             ))}
                         </select>
                     </div>
 
+                    {/* Subcategoria (full width) */}
                     <div className="flex flex-col">
                         <label className="text-sm font-medium text-gray-700 mb-1">Subcategoria</label>
                         <select
@@ -137,39 +169,31 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
                             value={form.subcategoryId ?? ""}
                             onChange={handleChange}
                             disabled={!subcategories.length}
-                            className={`p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!subcategories.length ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                            className={`p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!subcategories.length ? "bg-gray-100 cursor-not-allowed" : ""
+                                }`}
                         >
                             <option value="">Selecione a Subcategoria</option>
-                            {subcategories.map(sub => (
-                                <option key={sub.id} value={sub.id}>{sub.name}</option>
+                            {subcategories.map((sub) => (
+                                <option key={sub.id} value={sub.id}>
+                                    {sub.name}
+                                </option>
                             ))}
                         </select>
                     </div>
-
-                    {/* Estoque */}
-                    <div className="flex flex-col">
-                        <label className="text-sm font-medium text-gray-700 mb-1">Estoque</label>
-                        <input
-                            name="stock"
-                            value={form.stock ?? 0}
-                            onChange={handleChange}
-                            type="number"
-                            className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                    </div>
                 </div>
+
 
                 {/* Botões */}
                 <div className="flex justify-end gap-3 mt-2">
                     <button
                         onClick={onClose}
-                        className="px-5 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
+                        className="px-5 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition cursor-pointer"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                        className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition cursor-pointer"
                     >
                         Salvar
                     </button>

@@ -19,6 +19,7 @@ export default function ProductTable({ products, pageSize = 5 }: ProductTablePro
 
   // 🔎 Filtros
   const [search, setSearch] = useState("");
+  const [searchIsbn, setSearchIsbn] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSubcategory, setSelectedSubcategory] = useState("");
 
@@ -42,12 +43,22 @@ export default function ProductTable({ products, pageSize = 5 }: ProductTablePro
   // 🧮 Filtragem dos produtos
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
-      const matchName = search === "" || p.name.toLowerCase().includes(search.toLowerCase());
-      const matchCategory = selectedCategory === "" || p.category?.id.toString() === selectedCategory;
-      const matchSubcategory = selectedSubcategory === "" || p.subcategory?.id.toString() === selectedSubcategory;
-      return matchName && matchCategory && matchSubcategory;
+      const matchIsbn =
+        searchIsbn === "" || (p.isbn && p.isbn.toLowerCase().includes(searchIsbn.toLowerCase()));
+
+      const matchName =
+        search === "" || p.name.toLowerCase().includes(search.toLowerCase());
+
+      const matchCategory =
+        selectedCategory === "" || p.category?.id.toString() === selectedCategory;
+
+      const matchSubcategory =
+        selectedSubcategory === "" || p.subcategory?.id.toString() === selectedSubcategory;
+
+      return matchName && matchCategory && matchSubcategory && matchIsbn;
     });
-  }, [products, search, selectedCategory, selectedSubcategory]);
+  }, [products, search, selectedCategory, selectedSubcategory, searchIsbn]);
+
 
   const totalPages = Math.ceil(filteredProducts.length / pageSize);
   const paginatedProducts = filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -100,6 +111,13 @@ export default function ProductTable({ products, pageSize = 5 }: ProductTablePro
       <div className="flex flex-wrap gap-4 mb-4">
         <input
           type="text"
+          placeholder="Buscar por ISBN..."
+          value={searchIsbn}
+          onChange={(e) => setSearchIsbn(e.target.value)}
+          className="px-3 py-2 border rounded-md w-60"
+        />
+        <input
+          type="text"
           placeholder="Buscar por nome..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -139,6 +157,7 @@ export default function ProductTable({ products, pageSize = 5 }: ProductTablePro
         <table className="w-full text-sm text-left text-gray-600">
           <thead className="bg-gray-100 text-gray-700 uppercase text-xs font-bold">
             <tr>
+              <th className="px-4 py-3">ISBN</th>
               <th className="px-4 py-3">Nome</th>
               <th className="px-4 py-3">Preço</th>
               <th className="px-4 py-3">Categoria</th>
@@ -151,6 +170,7 @@ export default function ProductTable({ products, pageSize = 5 }: ProductTablePro
             {paginatedProducts.length > 0 ? (
               paginatedProducts.map((product: any) => (
                 <tr key={product.id} className="hover:bg-gray-50 transition">
+                  <td className="px-4 py-3 font-medium text-gray-800">{product.isbn || "-"}</td>
                   <td className="px-4 py-3 font-medium text-gray-800">{product.name}</td>
                   <td className="px-4 py-3">R$ {Number(product.price).toFixed(2)}</td>
                   <td className="px-4 py-3">{product?.category?.name || "-"}</td>

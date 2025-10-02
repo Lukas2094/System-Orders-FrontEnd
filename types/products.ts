@@ -24,6 +24,7 @@ export interface Product {
     updatedAt: string;
     category?: Category;
     subcategory?: Subcategory;
+    isbn: string;
 }
 
 // se vier como array
