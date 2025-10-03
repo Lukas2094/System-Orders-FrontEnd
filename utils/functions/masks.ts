@@ -11,4 +11,16 @@ function validateEmail(value: string) {
   return regex.test(value);
 }
 
-export { maskPhone, validateEmail };
+function formatDateBR(isoDate?: string){
+  if (!isoDate) return "-";
+  const date = new Date(isoDate);
+  return date.toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+export { maskPhone, validateEmail, formatDateBR };
