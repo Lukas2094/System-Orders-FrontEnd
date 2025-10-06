@@ -108,14 +108,14 @@ export default function MenuTable({ menusList, rolesList }: MenuTableProps) {
                                             setSelectedMenu(menu);
                                             setModalOpen(true);
                                         }}
-                                        className="flex items-center justify-center w-8 h-8 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition"
+                                        className="flex items-center justify-center w-8 h-8 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition cursor-pointer"
                                     >
                                         <FaEdit size={14} />
                                     </button>
                                     <button
                                         onClick={() => handleDelete(menu.id)}
                                         title="Excluir"
-                                        className="flex items-center justify-center w-8 h-8 bg-red-500 text-white rounded-full hover:bg-red-600 transition"
+                                        className="flex items-center justify-center w-8 h-8 bg-red-500 text-white rounded-full hover:bg-red-600 transition cursor-pointer"
                                     >
                                         <FaTrash size={14} />
                                     </button>
