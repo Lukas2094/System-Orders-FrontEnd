@@ -1,14 +1,17 @@
 import { FaUsers, FaBox, FaShoppingCart, FaChartBar } from "react-icons/fa";
 import React from "react";
 import DynamicMetadata from "@/components/SEO/Metadata";
+import { cookies } from "next/headers";
 
 async function getDashboardData() {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-
+  const cookieStore = cookies();
+  
+  const token = (await cookieStore).get("token")?.value;
   const [ordersRes, productsRes, usersRes , appointmentsRes] = await Promise.all([
     fetch(`${baseUrl}/orders`, { cache: "no-store" }),
-    fetch(`${baseUrl}/products`, { cache: "no-store" }),
-    fetch(`${baseUrl}/users`, { cache: "no-store" }),
+    fetch(`${baseUrl}/products`, { cache: "no-store", headers: { Authorization: `Bearer ${token}`}  }),
+    fetch(`${baseUrl}/users`, { cache: "no-store", headers: { Authorization: `Bearer ${token}` } }),
     fetch(`${baseUrl}/appointments`, { cache: "no-store" }),
   ]);
 

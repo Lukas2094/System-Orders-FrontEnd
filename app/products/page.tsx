@@ -2,9 +2,18 @@ import ProducTable from '@/components/ProductCard/ProductTable';
 import DynamicMetadata from '@/components/SEO/Metadata';
 import { ProductList } from '@/types/products';
 import { api } from '@/utils/api';
+import { cookies } from 'next/headers';
 
 export default async function ProductsPage() {
-    const res = await api.get('/products');
+    const cookieStore = cookies();
+    const token = (await cookieStore).get("token")?.value;
+
+    const res = await api.get('/products', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
     const productsSSR: ProductList = res.data;
 
     return (

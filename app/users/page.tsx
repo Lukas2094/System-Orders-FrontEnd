@@ -11,7 +11,12 @@ export default async function UsersPage() {
     const token = (await cookieStore).get("token")?.value;
     const decoded: any = token ? jwt.decode(token) : null;
 
-    const res = await api.get('/users');
+    const res = await api.get('/users', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
     const usersSSR = res.data;
 
     const resRoles = await api.get('/roles');
