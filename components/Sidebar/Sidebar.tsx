@@ -124,16 +124,27 @@ export default function Sidebar() {
   return (
     <>
       {/* HEADER MOBILE */}
-      <header className="lg:hidden fixed top-0 left-0 w-full bg-gray-900 text-white flex items-center justify-between flex-row-reverse px-4 py-3 shadow-md z-50">
-        <div className="flex items-center gap-2">
-          <Image src="/imgs/png/order.png" alt="Logo" width={40} height={40} />
-          <span className="font-semibold">{name || "Painel"}</span>
-        </div>
+      <header className="lg:hidden fixed top-0 left-0 w-full bg-gray-900 text-white flex items-center justify-between px-4 py-3 shadow-md z-50">
+        {/* Botão menu burguer à esquerda */}
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           className="text-white focus:outline-none"
         >
           {isMobileMenuOpen ? <FaTimes size={22} /> : <FaBars size={22} />}
+        </button>
+
+        {/* Logo e nome */}
+        <div className="flex items-center gap-2">
+          <Image src="/imgs/png/order.png" alt="Logo" width={40} height={40} />
+          <span className="font-semibold">{name || "Painel"}</span>
+        </div>
+
+        {/* Botão de logout no mobile */}
+        <button
+          onClick={handleLogout}
+          className="text-white focus:outline-none hover:text-red-400 transition-colors"
+        >
+          <FaSignOutAlt size={22} />
         </button>
       </header>
 
@@ -149,10 +160,9 @@ export default function Sidebar() {
           ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"} 
           lg:translate-x-0 lg:static z-40`}
       >
-        {/* Só exibe Avatar e Logo no Desktop */}
+        {/* Avatar e Logo apenas no Desktop */}
         <div className="hidden lg:block">
           <Avatar name={name} isExpanded={isExpanded} />
-
           <Link href="/" className="flex items-center mb-6 cursor-pointer">
             <Image
               src="/imgs/png/order.png"
@@ -165,7 +175,8 @@ export default function Sidebar() {
           </Link>
         </div>
 
-        <nav className="flex flex-col gap-1 flex-grow mt-12 lg:mt-0.5 justify-center">
+        {/* Menus */}
+        <nav className="flex flex-col gap-3 flex-grow mt-12 lg:mt-0.5 ">
           {menus.map((menu) => {
             const Icon = (Icons as any)[menu.icon] || Icons.FaBox;
 
@@ -174,43 +185,55 @@ export default function Sidebar() {
                 <div key={menu.id} className="flex flex-col">
                   <button
                     onClick={() => toggleDropdown(menu.id.toString())}
-                    className="flex items-center justify-between gap-3 p-2 rounded hover:bg-gray-700 transition w-full cursor-pointer"
+                    className="flex items-center justify-between gap-3 p-1 rounded hover:bg-gray-700 transition w-full cursor-pointer"
                   >
                     <div className="flex items-center gap-3">
                       <Icon size={20} />
-                      <span className={`whitespace-nowrap transition-all duration-300 ${isExpanded ? "opacity-100" : "opacity-0 w-0"}`}>
+                      <span
+                        className={`whitespace-nowrap transition-all duration-300 ${isExpanded ? "opacity-100" : "opacity-0 w-0"
+                          }`}
+                      >
                         {menu.name}
                       </span>
                     </div>
                     {isExpanded && (
                       <span className="transition-all duration-300">
-                        {openDropdown === menu.id.toString() ? <FaChevronDown size={14} /> : <FaChevronRight size={14} />}
+                        {openDropdown === menu.id.toString() ? (
+                          <FaChevronDown size={14} />
+                        ) : (
+                          <FaChevronRight size={14} />
+                        )}
                       </span>
                     )}
                   </button>
 
-                  {openDropdown === menu.id.toString() && isExpanded && menu.submenus?.length > 0 && (
-                    <div className="ml-6 mt-1 flex flex-col gap-1 border-l-2 border-gray-600 pl-3">
-                      {menu.submenus.map((submenu: any, index: number) => {
-                        const SubIcon = (Icons as any)[submenu.icon] || Icons.FaBox;
-                    
-                        return (
-                          <Link
-                            key={submenu.id || `submenu-${menu.id}-${index}`}
-                            href={submenu.path}
-                            className="flex gap-1 p-2 rounded hover:bg-gray-700 transition text-sm cursor-pointer"
-                            onClick={() => {
-                              setOpenDropdown(null);
-                              setIsMobileMenuOpen(false);
-                            }}
-                          >
-                            <SubIcon size={16} />
-                            <span className="whitespace-nowrap">{submenu.name}</span>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
+                  {openDropdown === menu.id.toString() &&
+                    isExpanded &&
+                    menu.submenus?.length > 0 && (
+                      <div className="ml-6 mt-1 flex flex-col gap-1 border-l-2 border-gray-600 pl-3">
+                        {menu.submenus.map((submenu: any, index: number) => {
+                          const SubIcon =
+                            (Icons as any)[submenu.icon] || Icons.FaBox;
+
+                          return (
+                            <Link
+                              key={submenu.id || `submenu-${menu.id}-${index}`}
+                              href={submenu.path}
+                              className="flex gap-1 p-2 rounded hover:bg-gray-700 transition text-sm cursor-pointer"
+                              onClick={() => {
+                                setOpenDropdown(null);
+                                setIsMobileMenuOpen(false);
+                              }}
+                            >
+                              <SubIcon size={16} />
+                              <span className="whitespace-nowrap">
+                                {submenu.name}
+                              </span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
                 </div>
               );
             }
@@ -219,24 +242,34 @@ export default function Sidebar() {
               <Link
                 key={menu.id}
                 href={menu.path}
-                className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition cursor-pointer"
+                className="flex items-center gap-3 p-1 rounded hover:bg-gray-700 transition cursor-pointer"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <Icon size={20} />
-                <span className={`whitespace-nowrap transition-all duration-300 ${isExpanded ? "opacity-100" : "opacity-0 w-0"}`}>
+                <span
+                  className={`whitespace-nowrap transition-all duration-300 ${isExpanded ? "opacity-100" : "opacity-0 w-0"
+                    }`}
+                >
                   {menu.name}
                 </span>
               </Link>
             );
           })}
 
-          <div className="mt-auto">
+          {/* Botão sair só no Desktop */}
+          <div className="hidden lg:block mt-auto">
             <button
               onClick={handleLogout}
               className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition w-full group cursor-pointer"
             >
-              <FaSignOutAlt size={20} className="group-hover:text-red-400 transition-colors" />
-              <span className={`whitespace-nowrap transition-all duration-300 ${isExpanded ? "opacity-100" : "opacity-0 w-0"} group-hover:text-red-400`}>
+              <FaSignOutAlt
+                size={20}
+                className="group-hover:text-red-400 transition-colors"
+              />
+              <span
+                className={`whitespace-nowrap transition-all duration-300 ${isExpanded ? "opacity-100" : "opacity-0 w-0"
+                  } group-hover:text-red-400`}
+              >
                 Sair
               </span>
             </button>
@@ -245,4 +278,4 @@ export default function Sidebar() {
       </div>
     </>
   );
-}
+};
