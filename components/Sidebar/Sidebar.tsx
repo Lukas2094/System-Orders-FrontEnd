@@ -34,7 +34,13 @@ export default function Sidebar() {
           hasDropdown: Array.isArray(menu.submenus) && menu.submenus.length > 0,
         }));
 
-        setMenus(enhancedMenus);
+        const orderedMenus = enhancedMenus.sort((a: any, b: any) => {
+          if (a.id === 3) return 1;
+          if (b.id === 3) return -1;
+          return 0;
+        });
+
+        setMenus(orderedMenus);
       } catch (error) {
         console.error("Erro ao buscar menus:", error);
       }
