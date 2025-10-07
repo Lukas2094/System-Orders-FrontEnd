@@ -30,7 +30,7 @@ export default async function RootLayout({
           {isAuthenticated && <Sidebar />}
           <main
             className={`${isAuthenticated ? 'flex-1' : 'w-full'} 
-              p-6 overflow-y-auto`}
+              p-6 overflow-y-auto md:mt-0 mt-16`}
             >
             {children}
           </main>

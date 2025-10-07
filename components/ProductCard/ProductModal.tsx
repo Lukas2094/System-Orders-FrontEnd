@@ -85,13 +85,23 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 p-4">
-            <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 space-y-5 relative animate-fadeIn">
-                <h2 className="text-2xl font-bold text-gray-800 text-center w-full flex justify-between p-2">
-                    {initialData ? "Editar Produto" : "Novo Produto"} <IoMdCloseCircle className="inline-block align-middle cursor-pointer" onClick={onClose} />
-                </h2>
+            <div className="bg-white w-full max-w-md lg:max-w-2xl rounded-2xl shadow-2xl p-4 lg:p-6 space-y-4 lg:space-y-5 relative animate-fadeIn max-h-[90vh] overflow-y-auto">
+                {/* Header */}
+                <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                    <h2 className="text-xl lg:text-2xl font-bold text-gray-800">
+                        {initialData ? "Editar Produto" : "Novo Produto"}
+                    </h2>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-500 hover:text-gray-700 transition-colors"
+                    >
+                        <IoMdCloseCircle size={24} />
+                    </button>
+                </div>
 
-                <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                {/* Form */}
+                <div className="space-y-4 lg:space-y-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
                         {/* ISBN */}
                         <div className="flex flex-col">
                             <label className="text-sm font-medium text-gray-700 mb-1">ISBN</label>
@@ -100,7 +110,7 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
                                 value={form.isbn ?? ""}
                                 onChange={handleChange}
                                 placeholder="Digite ou scanneie o ISBN"
-                                className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="p-2 lg:p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm lg:text-base"
                             />
                         </div>
 
@@ -112,7 +122,7 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
                                 value={form.name ?? ""}
                                 onChange={handleChange}
                                 placeholder="Digite o nome do produto"
-                                className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="p-2 lg:p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm lg:text-base"
                             />
                         </div>
 
@@ -126,7 +136,7 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
                                 placeholder="0.00"
                                 type="number"
                                 step="0.01"
-                                className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="p-2 lg:p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm lg:text-base"
                             />
                         </div>
 
@@ -138,19 +148,19 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
                                 value={form.stock ?? 0}
                                 onChange={handleChange}
                                 type="number"
-                                className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="p-2 lg:p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm lg:text-base"
                             />
                         </div>
                     </div>
 
-                    {/* Categoria (full width) */}
+                    {/* Categoria */}
                     <div className="flex flex-col">
                         <label className="text-sm font-medium text-gray-700 mb-1">Categoria</label>
                         <select
                             name="categoryId"
                             value={form.categoryId ?? ""}
                             onChange={handleChange}
-                            className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="p-2 lg:p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm lg:text-base"
                         >
                             <option value="">Selecione a Categoria</option>
                             {categories.map((cat) => (
@@ -161,7 +171,7 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
                         </select>
                     </div>
 
-                    {/* Subcategoria (full width) */}
+                    {/* Subcategoria */}
                     <div className="flex flex-col">
                         <label className="text-sm font-medium text-gray-700 mb-1">Subcategoria</label>
                         <select
@@ -169,7 +179,7 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
                             value={form.subcategoryId ?? ""}
                             onChange={handleChange}
                             disabled={!subcategories.length}
-                            className={`p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!subcategories.length ? "bg-gray-100 cursor-not-allowed" : ""
+                            className={`p-2 lg:p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm lg:text-base ${!subcategories.length ? "bg-gray-100 cursor-not-allowed" : ""
                                 }`}
                         >
                             <option value="">Selecione a Subcategoria</option>
@@ -182,18 +192,17 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
                     </div>
                 </div>
 
-
                 {/* Botões */}
-                <div className="flex justify-end gap-3 mt-2">
+                <div className="flex flex-col sm:flex-row justify-end gap-2 lg:gap-3 pt-3 border-t border-gray-200">
                     <button
                         onClick={onClose}
-                        className="px-5 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition cursor-pointer"
+                        className="px-4 lg:px-5 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition cursor-pointer text-sm lg:text-base order-2 sm:order-1 w-full sm:w-auto"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition cursor-pointer"
+                        className="px-4 lg:px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition cursor-pointer text-sm lg:text-base order-1 sm:order-2 w-full sm:w-auto"
                     >
                         Salvar
                     </button>
