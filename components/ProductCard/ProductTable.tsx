@@ -64,16 +64,18 @@ export default function ProductTable({ products, pageSize = 5 }: ProductTablePro
   const paginatedProducts = filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const handleSave = async (product: any) => {
+    const token = localStorage.getItem('token');
+
     if (editingProduct) {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${editingProduct.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" , 'Authorization': `Bearer ${token}`},
         body: JSON.stringify(product),
       });
     } else {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" , 'Authorization': `Bearer ${token}`},
         body: JSON.stringify(product),
       });
     }
